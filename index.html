@@ -344,7 +344,8 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
     if (e.kind === "bg" || !p.dp || p.dp === "없음") return ["", ""];
     const col = hexA(p.dpC || "#000000", p.dpO ?? 15), out = p.dp !== "안쪽(가운데가 볼록)", inn = p.dp !== "바깥(떠 보이게)" && DP_BOX.has(e.kind);
     let c = "", st = "";
-    if (out) { if (DP_BOX.has(e.kind) && e.kind !== "photo" && e.kind !== "info") { c += " dpo"; st += `--dpo:0 ${p.dpY || 0}px ${p.dpB}px ${col};`; } else st += `filter:drop-shadow(0 ${p.dpY || 0}px ${(p.dpB || 0) / 2}px ${col});`; }
+    if (out) { if (e.kind === "photo" || e.kind === "info") st += `--dps:0 ${p.dpY || 0}px ${p.dpB}px ${col};`;   /* 사진·정보 줄: 잘리는 상자라 칸 자체에 그림자(filter는 아이폰에서 번져요) */
+      else if (DP_BOX.has(e.kind)) { c += " dpo"; st += `--dpo:0 ${p.dpY || 0}px ${p.dpB}px ${col};`; } else st += `filter:drop-shadow(0 ${p.dpY || 0}px ${(p.dpB || 0) / 2}px ${col});`; }
     if (inn) { c += " dpi"; st += `--dpi:inset 0 ${p.dpY || 0}px ${p.dpB}px ${col};`; }
     return [c, st];
   }
@@ -607,7 +608,7 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
       case "photo": {
         const im = e.src ? `<img src="${esc(e.src)}" alt="" style="width:100%;height:100%;object-fit:${p.fit};display:block">` : `<div style="width:100%;height:100%;display:grid;place-items:center;background:linear-gradient(160deg, ${p.ph1}, ${p.ph2});color:rgba(0,0,0,.35);font-size:13px">사진</div>`;
         const ov = p.grad ? `<div style="position:absolute;inset:0;background:linear-gradient(${p.angle}deg, ${hexA(p.fill, p.gop1)}, ${hexA(p.fill2, p.gop2)})"></div>` : "";
-        return `<div style="position:relative;width:100%;height:100%;${radCSS(p)}overflow:hidden;${p.bw ? `box-shadow:0 0 0 ${p.bw}px ${p.bc};` : ""}">${im}${ov}</div>`;
+        return `<div style="position:relative;width:100%;height:100%;${radCSS(p)}overflow:hidden;box-shadow:var(--dps, 0 0 0 0 transparent)${p.bw ? `, 0 0 0 ${p.bw}px ${p.bc}` : ""};">${im}${ov}</div>`;
       }
       case "btn": return `<div data-ed="all" style="width:100%;height:100%;display:grid;align-items:center;justify-items:${JI(p)};${tpCSS(p)}background:${fillCSS(p, "fill", p.op)};color:${p.color};font-size:${p.size}px;font-weight:${p.weight};${radCSS(p)}${p.bw ? `border:${p.bw}px solid ${p.bc};` : ""}">${t}</div>`;
       case "topbar": {   // [비움][제목 / 작은 글][비움]. 양옆 아이콘은 바 안에 넣은 버튼 칸
@@ -617,10 +618,10 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
       case "status": return `<div style="width:100%;height:100%;display:flex;align-items:center;gap:8px;${tpCSS(p)}${radCSS(p)}background:${fillCSS(p, "fill", p.op)};${p.blur ? `backdrop-filter:blur(${p.blur}px);-webkit-backdrop-filter:blur(${p.blur}px);` : ""}color:${p.color};font-weight:${p.weight};font-size:16px"><span data-ed="all" style="flex:1;text-align:${TA(p)}">${t}</span><span style="font-size:12px;letter-spacing:1px">${esc(p.icons)}</span></div>`;
       case "info": {
         const rs = infoRows(e), cwv = (i) => (e.cw && e.cw[i] > 0 ? e.cw[i] : 1); let k0 = 0;
-        if (p.look === "칸") return `<div style="display:flex;flex-direction:column;background:${fillCSS(p)};${radCSS(p)}${p.bw ? `border:${p.bw}px solid ${p.bc};` : ""}color:${p.color};font-size:${p.size}px;font-weight:${p.weight};overflow:hidden">${rs.map((r, ri) => {
+        if (p.look === "칸") return `<div style="display:flex;flex-direction:column;box-shadow:var(--dps, 0 0 0 0 transparent);background:${fillCSS(p)};${radCSS(p)}${p.bw ? `border:${p.bw}px solid ${p.bc};` : ""}color:${p.color};font-size:${p.size}px;font-weight:${p.weight};overflow:hidden">${rs.map((r, ri) => {
           const n = r.length, cols = p.cols === "글에 맞춰" ? `repeat(${n},auto)` : p.cols === "직접 정하기" ? r.map((_, i) => `minmax(0,${cwv(k0 + i)}fr)`).join(" ") : `repeat(${n},minmax(0,1fr))`; k0 += n;
           return `<div style="display:grid;grid-template-columns:${cols};flex:1 1 auto;${ri ? `border-top:1px solid ${p.bc};` : ""}">${r.map((x, i) => `<span data-ed="r${ri}c${i}" style="${tpCSS(p)}text-align:${TA(p, "center")};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;${i ? `border-left:1px solid ${p.bc};` : ""}">${esc(x) || "&nbsp;"}</span>`).join("")}</div>`; }).join("")}</div>`;
-        return `<div style="${tpCSS(p)}text-align:${TA(p, "center")};background:${fillCSS(p)};${radCSS(p)}${p.bw ? `border:${p.bw}px solid ${p.bc};` : ""}color:${p.color};font-size:${p.size}px;font-weight:${p.weight}">${rs.map((r, ri) => r.map((x, i) => `<span data-ed="r${ri}c${i}">${esc(x) || "&nbsp;"}</span>`).join(" · ")).join("<br>")}</div>`;
+        return `<div style="${tpCSS(p)}text-align:${TA(p, "center")};box-shadow:var(--dps, 0 0 0 0 transparent);background:${fillCSS(p)};${radCSS(p)}${p.bw ? `border:${p.bw}px solid ${p.bc};` : ""}color:${p.color};font-size:${p.size}px;font-weight:${p.weight}">${rs.map((r, ri) => r.map((x, i) => `<span data-ed="r${ri}c${i}">${esc(x) || "&nbsp;"}</span>`).join(" · ")).join("<br>")}</div>`;
       }
       case "chips": {
         const [title, ...rest] = String(e.text).split("\n"); const items = rest.join(",").split(",").map((x) => x.trim()).filter(Boolean);
