@@ -2,7 +2,8 @@
 
 프로필 화면 편집기(맥)에서 만든 화면을 휴대폰에서 실제 앱처럼 꽉 찬 화면으로 보는 페이지예요.
 
-- 주소: https://dononononongjin.github.io/areum-preview/ (맥에서 편집 중인 화면)
+- 주소: https://dononononongjin.github.io/areum-preview/ (맥에서 편집 중인 화면 · 11/2 20:21 저장분 ‘프로필 1안’)
+- 프로필 1안(맥에서 편집 중인 디자인, 11/2 20:21 저장분): https://dononononongjin.github.io/areum-preview/1/
 - 프로필 2안(레퍼런스 기반 처음 디자인): https://dononononongjin.github.io/areum-preview/2/
 - 프로필 3안(레퍼런스 분석 규칙을 따라 다시 만든 디자인): https://dononononongjin.github.io/areum-preview/3/
 - 아이폰: 사파리에서 주소를 열고 공유 버튼 → ‘홈 화면에 추가’ → 홈 화면 아이콘으로 열면 주소창 없이 보여요.

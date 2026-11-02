@@ -11,7 +11,7 @@
 <title>아름 미리보기</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&family=Noto+Serif+KR:wght@400;500;600;700&display=swap">
 <style>
 :root { --snap: #E0167A; --bg: #F3F2EE; --surface: #FFFFFF; --fg: #18181A; --muted: #5A5A60; --line: #DCDBD4; --chip: #E9E8E2; --link: #2A55C9; --on: #18181A; --on-fg: #FFFFFF; --sel: #2A6BFF; --grp: #E8590C;
   --font: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif; }
@@ -108,6 +108,24 @@ h1 { margin: 0; font-size: 22px; line-height: 1.3; }
 .ms.v { width: 0; border-left: 1px dashed #E8590C; }
 .ms b { font: 600 10px var(--font); color: #fff; background: #E8590C; padding: 0 4px; border-radius: 4px; white-space: nowrap; }
 .ms.neg { border-color: #B91C1C; } .ms.neg b { background: #B91C1C; }
+/* 겹쳐 보기(분석 규칙): 화면 크기와 상관없이 글자는 같은 크기로 보이게 --sc(화면 배율)로 나눠요 */
+.an-ov { position: absolute; pointer-events: none; z-index: 99990; }
+.an-touch { left: 0; width: 390px; height: 844px; background: rgba(217, 72, 15, .13); }
+.an-touch i { position: absolute; border-radius: 34px; }
+.an-touch i.m { inset: 12% 8%; background: rgba(46, 160, 67, .14); }
+.an-touch i.c { inset: 26% 20%; background: rgba(46, 160, 67, .24); border-radius: 26px; }
+.an-touch b, .an-mm, .an-n { font-family: var(--font); font-weight: 700; color: #fff; white-space: nowrap; }
+.an-touch b { position: absolute; font-size: calc(11px / var(--sc, 1)); background: rgba(28, 28, 30, .78); padding: 2px 6px; border-radius: 6px; transform: translate(-50%, -50%); }
+.an-mm { position: absolute; font-size: calc(10px / var(--sc, 1)); padding: 1px 5px; border-radius: 5px; z-index: 99991; pointer-events: none; transform: translate(-50%, -50%); }
+.an-mm.ok { background: #1E7B34; } .an-mm.lo { background: #C2410C; }
+.an-n { position: absolute; min-width: calc(20px / var(--sc, 1)); height: calc(20px / var(--sc, 1)); border-radius: 999px; background: #1C1C1E; font-size: calc(11px / var(--sc, 1)); line-height: calc(20px / var(--sc, 1)); text-align: center; padding: 0 3px; z-index: 99992; pointer-events: none; box-shadow: 0 0 0 calc(2px / var(--sc, 1)) #fff; }
+.an-list { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; }
+.an-list li { border: 1px solid var(--line); border-radius: 8px; padding: 7px 8px; background: var(--surface); font-size: 12.5px; display: grid; gap: 3px; }
+.an-list li b { font-weight: 600; }
+.an-list li.hi { border-color: color-mix(in srgb, #C2410C 55%, var(--line)); }
+.an-list li small { color: var(--muted); font-size: 11.5px; }
+.an-list li .btn { justify-self: start; min-height: 30px; }
+.an-why { margin: -2px 0 8px; font-size: 11.5px; color: var(--muted); }
 .snappop { display: grid; grid-template-columns: 1fr; gap: 4px; width: min(380px, calc(100vw - 32px)); }
 .snappop .sp-t { font-size: 13.5px; }
 .snappop .chk { align-items: flex-start; }
@@ -202,6 +220,7 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
   <button class="btn" id="phoneBtn" title="이 디자인만 앱 화면처럼 가득 보여요. 휴대폰에서 이 페이지를 열면 저절로 이렇게 보이고, 맥에서 고친 대로 따라와요">앱처럼 보기</button>
   <span class="liveinfo" id="liveInfo"></span>
   <button class="btn" id="bgBtn" title="맨 밑 배경을 골라 색·사진을 바꿔요">배경 고르기</button>
+  <button class="btn" id="anBtn" title="아무것도 고르지 않은 상태로: 레퍼런스 분석 규칙을 화면 전체에 적용하고 점검해요">화면 전체(분석 규칙)</button>
   <div class="addwrap"><button class="btn" id="snapBtn" aria-expanded="false" title="끌 때 주위 칸의 가운데·가장자리·같은 간격에 붙는 선">맞춤 선</button><div class="palette snappop" id="snapPop" hidden></div></div>
   <button class="btn" id="resetBtn">처음 디자인으로</button>
 </div></div>
@@ -238,7 +257,7 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
 <div class="appview" id="appview" hidden><div class="av-layer" id="avUnder"></div><div class="av-scroll" id="avScroll"></div><div class="av-layer" id="avOver"></div><button type="button" class="av-back" id="avBack" hidden>← 편집으로</button><p class="av-msg" id="avMsg" hidden></p></div>
 <div class="toast" id="toast" role="status" hidden></div>
 
-<script>window.AREUM_DESIGN = {"contentH":2676,"els":[{"b":{"h":"c","k":"|1","ox":0,"oy":0,"v":"t"},"fixed":true,"group":null,"h":844,"hidden":false,"id":"e1","kind":"bg","locked":false,"lv":0,"name":"배경","own":{},"src":"","style":"s_bg","text":"","w":390,"x":0,"y":0},{"_bw":133,"_h":43,"fixed":false,"free":false,"group":null,"gx":0,"h":48,"hidden":false,"id":"e4","kind":"q","lean":"l","locked":false,"lv":2,"m":{"mb":5,"ml":5,"mt":5},"name":"질문 말풍선(앱)","own":{"color":"#1C1C1E","dp":"바깥(떠 보이게)","dpB":4,"fill":"#ffffff","lineH":1.45,"radius":20,"size":16,"tail":true,"tpB":10,"tpL":14,"tpR":14,"tpT":10,"weight":"400"},"src":"","style":"s_w0zdk9tk","text":"지원님은 어때 ?","w":290,"x":55,"y":130},{"_bw":330,"_h":159,"fixed":false,"group":null,"gx":0,"h":48,"hidden":false,"id":"e6","kind":"a","lean":"r","locked":false,"lv":2,"m":{"mb":10,"ml":40,"mr":20,"mt":10},"name":"대답 말풍선(그 사람)","own":{},"src":"","style":"s_a","szw":"fill","text":"주말엔 한강에서 자전거 타는 걸 좋아해요. 망원에서 출발해 여의도까지 달리고, 돌아오는 길에 편의점 라면 먹는 게 제 작은 행복이에요. 바람이 좋은 날엔 해 질 때까지 강가 잔디에 앉아 음악을 들으며 쉬기도 해요. 같이 달릴 사람이 생기면 좋겠어요.","w":330,"x":40,"y":803},{"fixed":false,"group":null,"gx":0,"h":350,"hidden":false,"id":"e7","kind":"photo","lean":"r","locked":false,"lv":2,"m":{"mb":5,"ml":20,"mr":20,"mt":5},"name":"사진 1","own":{"angle":180,"bc":"#FFFFFF","bw":0,"dp":"바깥(떠 보이게)","dpB":5,"dpC":"#000000","dpO":15,"dpY":0,"fill":"#000000","fill2":"#000000","fit":"cover","gop1":0,"gop2":45,"grad":false,"ph1":"#FBD3CF","ph2":"#F7E7D6","radius":22},"src":"","style":"s_photo","szh":"sq","szw":"fill","text":"","w":350,"x":20,"y":188},{"_h":48,"fixed":false,"group":null,"gx":0,"h":40,"hidden":false,"id":"e8","kind":"info","lean":"r","locked":false,"lv":2,"m":{"mb":5,"ml":20,"mr":20,"mt":0},"name":"기본 정보 줄","own":{"angle":180,"bc":"#EEE7E5","bw":1,"color":"#3A3A3C","dp":"바깥(떠 보이게)","dpB":5,"dpC":"#000000","dpO":15,"dpY":0,"fill":"#FFFFFF","fill2":"#FFF7F5","grad":false,"look":"칸","minH":0,"radius":14,"size":18,"talign":"가운데","tpB":10,"tpT":10},"src":"","style":null,"szw":"fill","text":"95년생","w":350,"x":20,"y":543},{"_bw":177,"_h":43,"fixed":false,"group":null,"gx":0,"h":48,"hidden":false,"id":"e10","kind":"q","lean":"l","locked":false,"lv":2,"m":{"mb":10,"ml":20,"mr":10,"mt":30},"name":"질문 말풍선(앱)","own":{},"src":"","style":"s_q","text":"어떤 사람을 좋아해요?","w":327,"x":20,"y":1332},{"_bw":330,"_h":159,"fixed":false,"group":null,"gx":0,"h":48,"hidden":false,"id":"e12","kind":"a","lean":"r","locked":false,"lv":2,"m":{"mb":10,"ml":40,"mr":20,"mt":10},"name":"대답 말풍선(그 사람)","own":{},"src":"","style":"s_a","szw":"fill","text":"잘 웃고, 이야기를 끝까지 들어 주는 사람이 좋아요. 제 얘기에 질문을 하나 더 건네 주는 사람이면 금방 편해지는 것 같아요. 작은 약속도 잘 지키고, 고마운 일엔 고맙다고 바로 말해 주는 사람이면 더 좋아요. 저도 그런 사람이 되려고 노력해요.","w":330,"x":40,"y":1395},{"_bw":186,"_h":43,"fixed":false,"group":null,"gx":0,"h":48,"hidden":false,"id":"e14","kind":"q","lean":"l","locked":false,"lv":2,"m":{"mb":10,"ml":20,"mr":10,"mt":30},"name":"질문 말풍선(앱)","own":{},"src":"","style":"s_q","text":"쉬는 날엔 주로 뭐 해요?","w":327,"x":20,"y":1924},{"_bw":330,"_h":136,"fixed":false,"group":null,"gx":0,"h":48,"hidden":false,"id":"e16","kind":"a","lean":"r","locked":false,"lv":2,"m":{"mb":10,"ml":40,"mr":20,"mt":10},"name":"대답 말풍선(그 사람)","own":{},"src":"","style":"s_a","szw":"fill","text":"동네 빵집을 돌아다녀요. 요즘은 소금빵에 빠졌어요. 그리고 전시도 보러 다니고 평일날 하지 못 했던걸 부지런하게 돌아다니면서 즐기고 있어. 주말에 집에서 쉬고 싶기도 한데 너무 집에만 있으면 아깝더라고 ㅜ","w":330,"x":40,"y":1987},{"fixed":false,"group":null,"gx":0,"h":310,"hidden":false,"id":"e17","kind":"photo","lean":"r","locked":false,"lv":2,"m":{"mb":10,"ml":60,"mr":20,"mt":10},"name":"사진 2","own":{"angle":180,"bc":"#FFFFFF","bw":0,"dp":"없음","dpB":5,"dpC":"#000000","dpO":15,"dpY":0,"fill":"#000000","fill2":"#000000","fit":"cover","gop1":0,"gop2":45,"grad":false,"ph1":"#FBD3CF","ph2":"#F7E7D6","radius":22},"src":"","style":null,"szh":"sq","szw":"fill","text":"","w":310,"x":60,"y":982},{"_bw":215,"_h":43,"fixed":false,"group":null,"gx":0,"h":48,"hidden":false,"id":"e19","kind":"q","lean":"l","locked":false,"lv":2,"m":{"mb":10,"ml":20,"mr":10,"mt":30},"name":"질문 말풍선(앱)","own":{},"src":"","style":"s_q","text":"처음 만나면 뭐 하고 싶어요?","w":327,"x":20,"y":2163},{"_bw":330,"_h":159,"fixed":false,"group":null,"gx":0,"h":48,"hidden":false,"id":"e21","kind":"a","lean":"r","locked":false,"lv":2,"m":{"mb":10,"ml":40,"mr":20,"mt":10},"name":"대답 말풍선(그 사람)","own":{},"src":"","style":"s_a","szw":"fill","text":"조용한 카페에서 이야기를 많이 나누고 싶어요. 서로 좋아하는 빵이나 자주 가는 동네 얘기를 하다 보면 시간이 금방 갈 것 같아요. 날씨가 좋으면 근처 공원을 천천히 걸어도 좋고요. 처음이라 어색해도 편하게 웃으면서 이야기할 수 있으면 좋겠어요.","w":330,"x":40,"y":2226},{"_bw":255,"_h":43,"fixed":false,"group":null,"gx":0,"h":48,"hidden":false,"id":"e23","kind":"q","lean":"l","locked":false,"lv":2,"m":{"mb":5,"ml":5,"mr":10,"mt":5},"name":"질문 말풍선(앱)","own":{},"src":"","style":"s_w0zdk9tk","text":"지원님에게 첫마디를 건네 볼까요?","w":290,"x":55,"y":2405},{"fixed":false,"group":"gsntzi2ir","gx":0,"h":48,"hidden":false,"id":"e27","kind":"btn","lean":"r","locked":false,"lv":2,"m":{"mb":10,"ml":30,"mr":30,"mt":10},"name":"첫마디 보내기","own":{"angle":90,"bc":"#E5E5EA","bw":0,"color":"#ffffff","dp":"바깥(떠 보이게)","dpB":2,"dpO":69,"fill":"#ff8a8a","fill2":"#FE9D6C","grad":false,"radius":16,"size":17,"weight":"700"},"src":"","style":null,"text":"첫마디 보내기","w":156,"x":204,"y":2468},{"fixed":false,"free":false,"group":null,"gx":0,"h":32,"hidden":false,"id":"e40fqx2fo","kind":"avatar","lean":"l","locked":false,"lv":2,"m":{"mr":5},"name":"앱 얼굴","own":{},"src":"","style":"s_avatar","text":"","w":35,"x":10,"y":130},{"fixed":false,"group":"gsntzi2ir","gx":0,"h":48,"hidden":false,"id":"eazpz27n5","kind":"btn","lean":"l","locked":false,"lv":2,"m":{"ml":30,"mr":30},"name":"버튼","own":{"angle":90,"bc":"#E5E5EA","bw":0,"color":"#000000","dp":"바깥(떠 보이게)","dpB":2,"dpO":100,"fill":"#ffffff","fill2":"#FE9D6C","grad":false,"radius":16,"size":17,"weight":"700"},"src":"","style":null,"text":"다음 사람 보기\n","w":156,"x":30,"y":2468},{"_bw":167,"_h":43,"fixed":false,"gapTop":2,"group":null,"gx":0,"h":48,"hidden":false,"id":"ec7c39t4a","kind":"q","lean":"l","locked":false,"lv":2,"m":{"mb":10,"ml":20,"mr":10,"mt":30},"name":"질문 말풍선(앱) 복사","own":{},"src":"","style":"s_q","text":"너는 어떤 사람이야 ?","w":327,"x":20,"y":740},{"fixed":false,"free":false,"group":null,"gx":0,"h":32,"hidden":false,"id":"ewoxkixik","kind":"avatar","lean":"l","locked":false,"lv":2,"m":{"mr":5},"name":"앱 얼굴 복사","own":{},"src":"","style":"s_avatar","text":"","w":35,"x":10,"y":2405},{"_h":112,"fixed":false,"group":null,"gx":0,"h":40,"hidden":false,"id":"eu1ncvz7c","kind":"info","lean":"r","locked":false,"lv":2,"m":{"mb":0,"ml":20,"mr":20,"mt":0},"name":"기본 정보 줄 복사","own":{"angle":180,"bc":"#EEE7E5","bw":1,"color":"#3A3A3C","dp":"바깥(떠 보이게)","dpB":5,"dpC":"#000000","dpO":15,"dpY":0,"fill":"#FFFFFF","fill2":"#FFF7F5","grad":false,"look":"칸","minH":0,"radius":14,"size":15,"talign":"가운데","tpB":7,"tpL":7,"tpR":7,"tpT":7},"src":"","style":null,"szw":"fill","text":"28세|164cm|INTJ|헬스\n서울 마포|디자이너||\n|||","w":350,"x":20,"y":596},{"fixed":false,"group":null,"gx":0,"h":310,"hidden":false,"id":"e44ve362f","kind":"photo","lean":"r","locked":false,"lv":2,"m":{"mb":10,"ml":20,"mr":60,"mt":10},"name":"사진 2 복사","own":{},"src":"","style":"s_photo","szh":"sq","szw":"fill","text":"","w":310,"x":20,"y":1574},{"b":{"h":"c","k":"|1","ox":0,"oy":37,"v":"t"},"fixed":true,"group":null,"h":53,"hidden":false,"id":"e30","kind":"topbar","locked":false,"lv":4,"m":{"mb":10,"ml":10,"mr":5,"mt":0},"name":"상단 바","own":{},"src":"","style":"s_topbar","text":"지원","w":4250,"x":-1930,"y":47},{"b":{"h":"c","k":"|1","ox":0,"oy":0,"v":"t"},"fixed":true,"group":null,"h":47,"hidden":false,"id":"e32","kind":"status","locked":false,"lv":4,"name":"상태 표시줄","own":{},"src":"","style":"s_status","text":"9:41","w":390,"x":0,"y":0},{"b":{"h":"r","k":"|1","ox":0,"oy":52,"v":"t"},"fixed":true,"free":true,"group":null,"h":43,"hidden":false,"id":"e8yj3jk5k","kind":"btn","locked":false,"lv":4,"m":{"ml":5,"mr":10},"name":"상단 바 오른쪽 버튼","own":{"angle":90,"bc":"#E5E5EA","bw":0,"color":"#6b6b6b","dp":"없음","fill":"#ffffff","fill2":"#FE9D6C","grad":false,"radius":12,"size":17,"weight":"500"},"src":"","style":null,"szw":"sq","text":"@","w":43,"x":337,"y":52},{"b":{"h":"l","k":"|1","ox":3,"oy":52,"v":"t"},"fixed":true,"free":true,"group":null,"h":43,"hidden":false,"id":"ehbsobty7","kind":"btn","locked":false,"lv":4,"m":{"ml":5,"mr":10},"name":"상단 바 오른쪽 버튼 복사","own":{"angle":90,"bc":"#E5E5EA","bw":0,"color":"#6b6b6b","dp":"없음","fill":"#ffffff","fill2":"#FE9D6C","grad":false,"radius":12,"size":17,"weight":"500"},"src":"","style":null,"szw":"sq","text":"<","w":43,"x":8,"y":52}],"groups":{"gsntzi2ir":{"m":true,"size":true}},"name":"프로필 1안","rows":1,"styles":{"s_7hfwnaot":{"id":"s_7hfwnaot","kind":"q","linkM":true,"name":"질문 말풍선(앱) 3","props":{"angle":180,"color":"#1C1C1E","dp":"바깥(떠 보이게)","dpB":4,"dpC":"#000000","dpO":19,"dpY":0,"fill":"#ffffff","fill2":"#E4DEDC","grad":false,"lineH":1.45,"minH":26,"radius":20,"size":13,"tail":true,"talign":"왼쪽","tpB":10,"tpL":14,"tpR":14,"tpT":10,"weight":"400"},"size":true},"s_a":{"id":"s_a","kind":"a","linkM":true,"name":"대답 말풍선(그 사람) 기본","props":{"color":"#424242","dp":"바깥(떠 보이게)","dpB":10,"dpO":10,"fill":"#ffffff","weight":"400"},"size":true},"s_avatar":{"id":"s_avatar","kind":"avatar","name":"앱 얼굴 기본","props":{},"size":true},"s_badge":{"id":"s_badge","kind":"badge","name":"확인 배지 기본","props":{}},"s_bg":{"id":"s_bg","kind":"bg","name":"배경 기본","props":{"angle":156,"fill":"#fcfcfc","fill2":"#ffffff","grad":false}},"s_btn":{"id":"s_btn","kind":"btn","name":"버튼 기본","props":{}},"s_chips":{"id":"s_chips","kind":"chips","name":"태그 칩 기본","props":{}},"s_cn92hdo7":{"id":"s_cn92hdo7","kind":"btn","name":"버튼 2","props":{"angle":90,"bc":"#E5E5EA","bw":0,"color":"#FFFFFF","fill":"#FF4A51","fill2":"#FE9D6C","grad":false,"radius":16,"sh":0,"size":17,"weight":"700"},"size":true},"s_composer":{"id":"s_composer","kind":"composer","name":"입력창 기본","props":{}},"s_divider":{"id":"s_divider","kind":"divider","name":"시간 표시 기본","props":{}},"s_frame":{"id":"s_frame","kind":"frame","name":"틀(판) 기본","props":{"fill":"#fafafa"}},"s_friend":{"id":"s_friend","kind":"friend","name":"친구 한마디 기본","props":{}},"s_info":{"id":"s_info","kind":"info","name":"기본 정보 줄 기본","props":{"dp":"바깥(떠 보이게)","dpB":5,"look":"칸","size":15}},"s_photo":{"id":"s_photo","kind":"photo","linkM":false,"name":"사진 기본","props":{"dp":"바깥(떠 보이게)","dpB":5},"size":true},"s_q":{"id":"s_q","kind":"q","linkM":true,"name":"질문 말풍선(앱) 기본","props":{"dp":"바깥(떠 보이게)","dpB":5,"dpO":15,"dpY":0,"fill":"#ffffff"},"size":true},"s_react":{"id":"s_react","kind":"react","name":"반응 하트 기본","props":{}},"s_shape":{"id":"s_shape","kind":"shape","name":"도형 기본","props":{"bc":"#ffffff","fill":"#ffffff"}},"s_status":{"id":"s_status","kind":"status","name":"상태 표시줄 기본","props":{"fill":"#ffffff","grad":false,"op":100}},"s_text":{"id":"s_text","kind":"text","name":"글자 기본","props":{"color":"#8E8E93","size":12.5,"talign":"가운데"}},"s_topbar":{"id":"s_topbar","kind":"topbar","name":"상단 바 기본","props":{"dp":"바깥(떠 보이게)","dpB":5,"dpO":15,"fill":"#ffffff","fill2":"#ffffff","grad":false,"line":false,"op":100,"rLink":"tl,tr,br,bl","radius":0}},"s_typing":{"id":"s_typing","kind":"typing","name":"입력 중 … 기본","props":{}},"s_w0zdk9tk":{"id":"s_w0zdk9tk","kind":"q","linkM":true,"name":"질문 말풍선(앱) 2","props":{"angle":180,"color":"#1C1C1E","dp":"바깥(떠 보이게)","dpB":4,"dpC":"#000000","dpO":19,"dpY":0,"fill":"#ffffff","fill2":"#E4DEDC","grad":false,"lineH":1.45,"minH":0,"radius":20,"size":16,"tail":true,"talign":"왼쪽","tpB":10,"tpL":14,"tpR":14,"tpT":10,"weight":"400"},"size":true}},"v":10};</script>
+<script>window.AREUM_DESIGN = {"contentH":2865,"els":[{"b":{"h":"c","k":"|1","ox":0,"oy":0,"v":"t"},"fixed":true,"group":null,"h":844,"hidden":false,"id":"e1","kind":"bg","locked":false,"lv":0,"name":"배경","own":{},"src":"","style":"s_bg","text":"","w":390,"x":0,"y":0},{"_bw":330,"_h":159,"fixed":false,"group":null,"gx":0,"h":48,"hidden":false,"id":"e6","kind":"a","lean":"r","locked":false,"lv":2,"m":{"mb":10,"ml":40,"mr":20,"mt":10},"name":"대답 말풍선(그 사람)","own":{},"src":"","style":"s_a","szw":"fill","text":"주말엔 한강에서 자전거 타는 걸 좋아해요. 망원에서 출발해 여의도까지 달리고, 돌아오는 길에 편의점 라면 먹는 게 제 작은 행복이에요. 바람이 좋은 날엔 해 질 때까지 강가 잔디에 앉아 음악을 들으며 쉬기도 해요. 같이 달릴 사람이 생기면 좋겠어요.","w":330,"x":40,"y":991},{"fixed":false,"group":null,"gx":0,"h":350,"hidden":false,"id":"e7","kind":"photo","lean":"r","locked":false,"lv":2,"m":{"mb":10,"ml":20,"mr":20,"mt":10},"name":"사진 1","own":{"angle":180,"bc":"#FFFFFF","bw":0,"dp":"바깥(떠 보이게)","dpB":5,"dpC":"#000000","dpO":15,"dpY":0,"fill":"#000000","fill2":"#000000","fit":"cover","gop1":0,"gop2":45,"grad":false,"ph1":"#FBD3CF","ph2":"#F7E7D6","radius":22},"src":"","style":"s_photo","szh":"sq","szw":"fill","text":"","w":350,"x":20,"y":130},{"_h":48,"fixed":false,"group":null,"gx":0,"h":40,"hidden":false,"id":"e8","kind":"info","lean":"r","locked":false,"lv":2,"m":{"mb":10,"ml":20,"mr":20,"mt":10},"name":"기본 정보 줄","own":{"angle":180,"bc":"#EEE7E5","bw":1,"color":"#3A3A3C","dp":"바깥(떠 보이게)","dpB":5,"dpC":"#000000","dpO":5,"dpY":0,"fill":"#FFFFFF","fill2":"#FFF7F5","grad":false,"look":"칸","minH":0,"radius":14,"size":18,"talign":"가운데","tpB":10,"tpT":10},"src":"","style":null,"szw":"fill","text":"95년생","w":350,"x":20,"y":500},{"_bw":177,"_h":43,"fixed":false,"group":null,"gx":0,"h":48,"hidden":false,"id":"e10","kind":"q","lean":"l","locked":false,"lv":2,"m":{"mb":10,"ml":20,"mr":10,"mt":30},"name":"질문 말풍선(앱)","own":{},"src":"","style":"s_q","text":"어떤 사람을 좋아해요?","w":327,"x":20,"y":1520},{"_bw":330,"_h":159,"fixed":false,"group":null,"gx":0,"h":48,"hidden":false,"id":"e12","kind":"a","lean":"r","locked":false,"lv":2,"m":{"mb":10,"ml":40,"mr":20,"mt":10},"name":"대답 말풍선(그 사람)","own":{},"src":"","style":"s_a","szw":"fill","text":"잘 웃고, 이야기를 끝까지 들어 주는 사람이 좋아요. 제 얘기에 질문을 하나 더 건네 주는 사람이면 금방 편해지는 것 같아요. 작은 약속도 잘 지키고, 고마운 일엔 고맙다고 바로 말해 주는 사람이면 더 좋아요. 저도 그런 사람이 되려고 노력해요.","w":330,"x":40,"y":1583},{"_bw":186,"_h":43,"fixed":false,"group":null,"gx":0,"h":48,"hidden":false,"id":"e14","kind":"q","lean":"l","locked":false,"lv":2,"m":{"mb":10,"ml":20,"mr":10,"mt":30},"name":"질문 말풍선(앱)","own":{},"src":"","style":"s_q","text":"쉬는 날엔 주로 뭐 해요?","w":327,"x":20,"y":2112},{"_bw":330,"_h":136,"fixed":false,"group":null,"gx":0,"h":48,"hidden":false,"id":"e16","kind":"a","lean":"r","locked":false,"lv":2,"m":{"mb":10,"ml":40,"mr":20,"mt":10},"name":"대답 말풍선(그 사람)","own":{},"src":"","style":"s_a","szw":"fill","text":"동네 빵집을 돌아다녀요. 요즘은 소금빵에 빠졌어요. 그리고 전시도 보러 다니고 평일날 하지 못 했던걸 부지런하게 돌아다니면서 즐기고 있어. 주말에 집에서 쉬고 싶기도 한데 너무 집에만 있으면 아깝더라고 ㅜ","w":330,"x":40,"y":2175},{"fixed":false,"group":null,"gx":0,"h":310,"hidden":false,"id":"e17","kind":"photo","lean":"r","locked":false,"lv":2,"m":{"mb":10,"ml":60,"mr":20,"mt":10},"name":"사진 2","own":{"angle":180,"bc":"#FFFFFF","bw":0,"dp":"바깥(떠 보이게)","dpB":5,"dpC":"#000000","dpO":5,"dpY":0,"fill":"#000000","fill2":"#000000","fit":"cover","gop1":0,"gop2":45,"grad":false,"ph1":"#FBD3CF","ph2":"#F7E7D6","radius":22},"src":"","style":null,"szh":"sq","szw":"fill","text":"","w":310,"x":60,"y":1170},{"_bw":215,"_h":43,"fixed":false,"gapTop":1,"group":null,"gx":0,"h":48,"hidden":false,"id":"e19","kind":"q","lean":"l","locked":false,"lv":2,"m":{"mb":10,"ml":20,"mr":10,"mt":30},"name":"질문 말풍선(앱)","own":{},"src":"","style":"s_q","text":"처음 만나면 뭐 하고 싶어요?","w":327,"x":20,"y":2352},{"_bw":330,"_h":159,"fixed":false,"group":null,"gx":0,"h":48,"hidden":false,"id":"e21","kind":"a","lean":"r","locked":false,"lv":2,"m":{"mb":10,"ml":40,"mr":20,"mt":10},"name":"대답 말풍선(그 사람)","own":{},"src":"","style":"s_a","szw":"fill","text":"조용한 카페에서 이야기를 많이 나누고 싶어요. 서로 좋아하는 빵이나 자주 가는 동네 얘기를 하다 보면 시간이 금방 갈 것 같아요. 날씨가 좋으면 근처 공원을 천천히 걸어도 좋고요. 처음이라 어색해도 편하게 웃으면서 이야기할 수 있으면 좋겠어요.","w":330,"x":40,"y":2415},{"_bw":255,"_h":43,"fixed":false,"group":null,"gx":0,"h":48,"hidden":false,"id":"e23","kind":"q","lean":"l","locked":false,"lv":2,"m":{"mb":5,"ml":5,"mr":10,"mt":5},"name":"질문 말풍선(앱)","own":{},"src":"","style":"s_w0zdk9tk","text":"지원님에게 첫마디를 건네 볼까요?","w":290,"x":55,"y":2594},{"fixed":false,"group":"gsntzi2ir","gx":0,"h":48,"hidden":false,"id":"e27","kind":"btn","lean":"r","locked":false,"lv":2,"m":{"mb":10,"ml":30,"mr":30,"mt":10},"name":"첫마디 보내기","own":{"angle":90,"bc":"#E5E5EA","bw":0,"color":"#ffffff","dp":"바깥(떠 보이게)","dpB":2,"dpO":69,"fill":"#ff8a8a","fill2":"#FE9D6C","grad":false,"radius":16,"size":17,"weight":"700"},"src":"","style":null,"text":"첫마디 보내기","w":156,"x":204,"y":2657},{"fixed":false,"group":"gsntzi2ir","gx":0,"h":48,"hidden":false,"id":"eazpz27n5","kind":"btn","lean":"l","locked":false,"lv":2,"m":{"ml":30,"mr":30},"name":"버튼","own":{"angle":90,"bc":"#E5E5EA","bw":0,"color":"#000000","dp":"바깥(떠 보이게)","dpB":2,"dpO":100,"fill":"#ffffff","fill2":"#FE9D6C","grad":false,"radius":16,"size":17,"weight":"700"},"src":"","style":null,"text":"다음 사람 보기\n","w":156,"x":30,"y":2657},{"_bw":167,"_h":43,"fixed":false,"gapTop":2,"group":null,"gx":0,"h":48,"hidden":false,"id":"ec7c39t4a","kind":"q","lean":"l","locked":false,"lv":2,"m":{"mb":10,"ml":20,"mr":10,"mt":30},"name":"질문 말풍선(앱) 복사","own":{},"src":"","style":"s_q","text":"너는 어떤 사람이야 ?","w":327,"x":20,"y":928},{"fixed":false,"free":false,"group":null,"gx":0,"h":32,"hidden":false,"id":"ewoxkixik","kind":"avatar","lean":"l","locked":false,"lv":2,"m":{"mr":5},"name":"앱 얼굴 복사","own":{},"src":"","style":"s_avatar","text":"","w":35,"x":10,"y":2594},{"_h":318,"fixed":false,"group":null,"gx":0,"h":40,"hidden":false,"id":"eu1ncvz7c","kind":"info","lean":"r","locked":false,"lv":2,"m":{"mb":10,"ml":20,"mr":20,"mt":10},"name":"기본 정보 줄 복사","own":{"angle":180,"bc":"#EDEDED","bw":0,"color":"#1C1C1E","dp":"바깥(떠 보이게)","dpB":5,"dpC":"#000000","dpO":5,"dpY":0,"fill":"#FFFEFC","fill2":"#FFF7F5","grad":false,"icons":true,"look":"목록","minH":0,"op":100,"pre":"coffeeting","radius":12,"size":15,"talign":"왼쪽","tpB":15,"tpL":18,"tpR":18,"tpT":15,"weight":"400"},"src":"","style":null,"szw":"fill","text":"28세|164cm|INTJ|헬스\n서울 마포|디자이너||\n|||","w":350,"x":20,"y":568},{"fixed":false,"group":null,"gx":0,"h":310,"hidden":false,"id":"e44ve362f","kind":"photo","lean":"r","locked":false,"lv":2,"m":{"mb":10,"ml":20,"mr":60,"mt":10},"name":"사진 2 복사","own":{},"src":"","style":"s_photo","szh":"sq","szw":"fill","text":"","w":310,"x":20,"y":1762},{"b":{"h":"c","k":"|1","ox":0,"oy":37,"v":"t"},"fixed":true,"group":null,"h":53,"hidden":false,"id":"e30","kind":"topbar","locked":false,"lv":4,"m":{"mb":10,"ml":10,"mr":5,"mt":0},"name":"상단 바","own":{},"src":"","style":"s_topbar","text":"지원","w":4250,"x":-1930,"y":47},{"b":{"h":"c","k":"|1","ox":0,"oy":0,"v":"t"},"fixed":true,"group":null,"h":47,"hidden":false,"id":"e32","kind":"status","locked":false,"lv":4,"name":"상태 표시줄","own":{},"src":"","style":"s_status","text":"9:41","w":390,"x":0,"y":0},{"b":{"h":"r","k":"|1","ox":0,"oy":52,"v":"t"},"fixed":true,"free":true,"group":null,"h":43,"hidden":false,"id":"e8yj3jk5k","kind":"btn","locked":false,"lv":4,"m":{"ml":5,"mr":10},"name":"상단 바 오른쪽 버튼","own":{"angle":90,"bc":"#E5E5EA","bw":0,"color":"#6b6b6b","dp":"없음","fill":"#ffffff","fill2":"#FE9D6C","grad":false,"radius":12,"size":17,"weight":"500"},"src":"","style":null,"szw":"sq","text":"@","w":43,"x":337,"y":52},{"b":{"h":"l","k":"|1","ox":3,"oy":52,"v":"t"},"fixed":true,"free":true,"group":null,"h":43,"hidden":false,"id":"ehbsobty7","kind":"btn","locked":false,"lv":4,"m":{"ml":5,"mr":10},"name":"상단 바 오른쪽 버튼 복사","own":{"angle":90,"bc":"#E5E5EA","bw":0,"color":"#6b6b6b","dp":"없음","fill":"#ffffff","fill2":"#FE9D6C","grad":false,"radius":12,"size":17,"weight":"500"},"src":"","style":null,"szw":"sq","text":"<","w":43,"x":8,"y":52}],"groups":{"gsntzi2ir":{"m":true,"size":true}},"name":"프로필 1안","rows":1,"styles":{"s_7hfwnaot":{"id":"s_7hfwnaot","kind":"q","linkM":true,"name":"질문 말풍선(앱) 3","props":{"angle":180,"color":"#1C1C1E","dp":"바깥(떠 보이게)","dpB":4,"dpC":"#000000","dpO":19,"dpY":0,"fill":"#ffffff","fill2":"#E4DEDC","grad":false,"lineH":1.45,"minH":26,"radius":20,"size":13,"tail":true,"talign":"왼쪽","tpB":10,"tpL":14,"tpR":14,"tpT":10,"weight":"400"},"size":true},"s_a":{"id":"s_a","kind":"a","linkM":true,"name":"대답 말풍선(그 사람) 기본","props":{"color":"#424242","dp":"바깥(떠 보이게)","dpB":5,"dpO":5,"fill":"#ffffff","op":100,"weight":"400"},"size":true},"s_avatar":{"id":"s_avatar","kind":"avatar","name":"앱 얼굴 기본","props":{},"size":true},"s_badge":{"id":"s_badge","kind":"badge","name":"확인 배지 기본","props":{}},"s_bg":{"id":"s_bg","kind":"bg","name":"배경 기본","props":{"angle":156,"fill":"#fcfcfc","fill2":"#ffffff","grad":false}},"s_btn":{"id":"s_btn","kind":"btn","name":"버튼 기본","props":{}},"s_chips":{"id":"s_chips","kind":"chips","name":"태그 칩 기본","props":{}},"s_cn92hdo7":{"id":"s_cn92hdo7","kind":"btn","name":"버튼 2","props":{"angle":90,"bc":"#E5E5EA","bw":0,"color":"#FFFFFF","fill":"#FF4A51","fill2":"#FE9D6C","grad":false,"radius":16,"sh":0,"size":17,"weight":"700"},"size":true},"s_composer":{"id":"s_composer","kind":"composer","name":"입력창 기본","props":{}},"s_divider":{"id":"s_divider","kind":"divider","name":"시간 표시 기본","props":{}},"s_frame":{"id":"s_frame","kind":"frame","name":"틀(판) 기본","props":{"fill":"#fafafa"}},"s_friend":{"id":"s_friend","kind":"friend","name":"친구 한마디 기본","props":{}},"s_info":{"id":"s_info","kind":"info","name":"기본 정보 줄 기본","props":{"dp":"바깥(떠 보이게)","dpB":5,"look":"칸","size":15}},"s_photo":{"id":"s_photo","kind":"photo","linkM":false,"name":"사진 기본","props":{"dp":"바깥(떠 보이게)","dpB":5,"dpO":5},"size":true},"s_q":{"id":"s_q","kind":"q","linkM":true,"name":"질문 말풍선(앱) 기본","props":{"dp":"없음","dpB":5,"dpO":15,"dpY":0,"fill":"#f5f5f5","op":0},"size":true},"s_react":{"id":"s_react","kind":"react","name":"반응 하트 기본","props":{}},"s_shape":{"id":"s_shape","kind":"shape","name":"도형 기본","props":{"bc":"#ffffff","fill":"#ffffff"}},"s_status":{"id":"s_status","kind":"status","name":"상태 표시줄 기본","props":{"fill":"#ffffff","grad":false,"op":100}},"s_text":{"id":"s_text","kind":"text","name":"글자 기본","props":{"color":"#8E8E93","size":12.5,"talign":"가운데"}},"s_topbar":{"id":"s_topbar","kind":"topbar","name":"상단 바 기본","props":{"dp":"바깥(떠 보이게)","dpB":5,"dpO":15,"fill":"#ffffff","fill2":"#ffffff","grad":false,"line":false,"op":100,"rLink":"tl,tr,br,bl","radius":0}},"s_typing":{"id":"s_typing","kind":"typing","name":"입력 중 … 기본","props":{}},"s_w0zdk9tk":{"id":"s_w0zdk9tk","kind":"q","linkM":true,"name":"질문 말풍선(앱) 2","props":{"angle":180,"color":"#1C1C1E","dp":"바깥(떠 보이게)","dpB":4,"dpC":"#000000","dpO":19,"dpY":0,"fill":"#ffffff","fill2":"#E4DEDC","grad":false,"lineH":1.45,"minH":0,"radius":20,"size":16,"tail":true,"talign":"왼쪽","tpB":10,"tpL":14,"tpR":14,"tpT":10,"weight":"400"},"size":true}},"v":10};</script>
 <script>
 (() => {
   "use strict";
@@ -266,8 +285,8 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
       props: { fill: "#FF4A51", color: "#FFFFFF", size: 16, weight: "500", lineH: 1.45, radius: 20, tail: true, minH: 0 }, f: BUBBLE_F, src: "질문과 답: Hinge · Bumble · The League · 윌유 · 내친소" },
     avatar: { label: "앱 얼굴", hint: "질문 옆 우리 아이콘(볼과 웃는 입)", auto: false, size: [32, 32], text: false,
       props: { bg: "#FFFFFF", bc: "#EDE6E3", cL: "#FF4A51", cR: "#FE9D6C", line: "#2A1E1A", radius: 50 }, f: [["bg", "바탕", "c"], ["bc", "테두리", "c"], ["cL", "왼쪽 볼", "c"], ["cR", "오른쪽 볼", "c"], ["line", "입", "c"], ["radius", "둥글기 %", "n", 0, 50]] },
-    photo: { label: "사진", hint: "그 사람 사진. 대답처럼 오른쪽에", auto: false, size: [260, 320], text: false,
-      props: { radius: 22, bw: 0, bc: "#FFFFFF", fit: "cover", ph1: "#FBD3CF", ph2: "#F7E7D6" }, f: [["radius", "모서리 둥글기", "n", 0, 60], ["bw", "테두리 굵기", "n", 0, 10], ["bc", "테두리 색", "c"], ["fit", "맞추기", "s", ["cover", "contain"]], ["ph1", "빈 사진 색 1", "c"], ["ph2", "빈 사진 색 2", "c"]], src: "사진과 글을 번갈아: Hinge · The League · Coffee Meets Bagel" },
+    photo: { label: "사진", hint: "그 사람 사진. 사진 위에 이름 같은 글을 얹을 수 있어요", auto: false, size: [260, 320], text: "", textName: "사진 위 글(첫 줄 크게, 다음 줄 작게. 비우면 없음)",
+      props: { radius: 22, bw: 0, bc: "#FFFFFF", fit: "cover", ph1: "#FBD3CF", ph2: "#F7E7D6", cap: "아래 왼쪽", capColor: "#FFFFFF", capSize: 26 }, f: [["radius", "모서리 둥글기", "n", 0, 60], ["bw", "테두리 굵기", "n", 0, 10], ["bc", "테두리 색", "c"], ["fit", "맞추기", "s", ["cover", "contain"]], ["ph1", "빈 사진 색 1", "c"], ["ph2", "빈 사진 색 2", "c"], ["cap", "사진 위 글 자리", "s", ["아래 왼쪽", "아래 가운데", "위 왼쪽"]], ["capColor", "사진 위 글 색", "c"], ["capSize", "사진 위 글 크기", "n", 14, 40]], src: "사진과 글을 번갈아: Hinge · The League · Coffee Meets Bagel" },
     btn: { label: "버튼", hint: "첫마디 보내기, 다음에 같은 누르는 곳", auto: false, size: [270, 54], text: "첫마디 보내기",
       props: { fill: "#FF4A51", op: 100, color: "#FFFFFF", size: 17, weight: "700", radius: 16, bw: 0, bc: "#E5E5EA" }, f: [["fill", "색", "c"], ["op", "바탕 불투명도 %(0이면 글자만)", "n", 0, 100], ["color", "글자 색", "c"], ["size", "글자 크기", "n", 11, 26], ["weight", "글자 굵기", "s", FONT_W], ["radius", "모서리 둥글기", "n", 0, 40], ["bw", "테두리 굵기", "n", 0, 6], ["bc", "테두리 색", "c"]] },
     topbar: { label: "상단 바", hint: "제목(내용 첫 줄)과 작은 글(둘째 줄). 양옆 ‹ ⋯ 는 바 안에 넣은 버튼 칸이에요", auto: false, size: [W, 52], text: "지원 · 28",
@@ -280,19 +299,23 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
     status: { label: "상태 표시줄", hint: "9:41, 배터리", auto: false, size: [W, 47], text: "9:41",
       props: { color: "#1C1C1E", fill: "#FFFFFF", op: 88, blur: 16, icons: "▮▮▮ ◔ ▭", radius: 0 }, f: [["color", "글자 색", "c"], ["fill", "바탕", "c"], ["op", "바탕 불투명도 %", "n", 0, 100], ["blur", "뒤 흐리게", "n", 0, 30], ["icons", "오른쪽 표시(글자)", "t", 24], ["radius", "모서리 둥글기", "n", 0, 40]], inner: ["icons"], innerName: "표시줄 안의 내용", textName: "시간" },
     info: { label: "기본 정보 줄", hint: "나이·키·사는 곳·하는 일. | 로 나눈 만큼 칸이 생겨요. 칸 너비를 정하거나 칸마다 따로 뗄 수 있어요", auto: true, size: [300, 40], text: "28세|164cm|서울 마포|디자이너",
-      props: { fill: "#FFFFFF", color: "#3A3A3C", size: 14, radius: 14, bw: 1, bc: "#EEE7E5", look: "칸" }, f: [["look", "보기", "s", ["칸", "점으로 잇기"]], ["fill", "색", "c"], ["color", "글자 색", "c"], ["size", "글자 크기", "n", 10, 22], ["radius", "모서리 둥글기", "n", 0, 30], ["bw", "테두리 굵기", "n", 0, 4], ["bc", "테두리 색", "c"]], src: "사실은 아이콘 줄·표: Hinge 3 · ONDO" },
+      props: { fill: "#FFFFFF", color: "#3A3A3C", size: 14, radius: 14, bw: 1, bc: "#EEE7E5", look: "칸", icons: false }, f: [["look", "보기", "s", ["칸", "칩", "목록", "점으로 잇기"]], ["icons", "아이콘 보이기(낱말을 보고 저절로)", "k"], ["fill", "색", "c"], ["color", "글자 색", "c"], ["size", "글자 크기", "n", 10, 22], ["radius", "모서리 둥글기", "n", 0, 30], ["bw", "테두리 굵기", "n", 0, 4], ["bc", "테두리 색", "c"]], src: "사실은 아이콘 줄·표: Hinge 3 · ONDO" },
     chips: { label: "태그 칩", hint: "성향·겹치는 점. 첫 줄은 제목, 다음은 쉼표로", auto: true, size: [350, 70], text: "나와 겹치는 3가지\n자전거, 빵집, 전시",
-      props: { title: "#8E8E93", fill: "#FFE7E5", color: "#C2333A", size: 14, radius: 999 }, f: [["title", "제목 색", "c"], ["fill", "칩 색", "c"], ["color", "칩 글자 색", "c"], ["size", "글자 크기", "n", 10, 22], ["radius", "칩 둥글기", "n", 0, 999]], src: "성향은 분류별 칩: Coffee Meets Bagel · happn · 하루야 / 나와 겹치는 곳: Feeld · happn · 내친소" },
+      props: { title: "#8E8E93", fill: "#FFE7E5", color: "#C2333A", size: 14, radius: 999, bw: 0, bc: "#E5E5EA", hash: false, box: false, boxFill: "#FFFFFF", boxRadius: 12, boxBw: 0, boxBc: "#E5E5EA" }, f: [["box", "카드로 감싸기", "k"], ["boxFill", "카드 색", "c"], ["boxRadius", "카드 둥글기", "n", 0, 40], ["boxBw", "카드 테두리 굵기", "n", 0, 4], ["boxBc", "카드 테두리 색", "c"], ["title", "제목 색", "c"], ["fill", "칩 색", "c"], ["color", "칩 글자 색", "c"], ["size", "글자 크기", "n", 10, 22], ["radius", "칩 둥글기", "n", 0, 999], ["bw", "칩 테두리 굵기", "n", 0, 4], ["bc", "칩 테두리 색", "c"], ["hash", "# 붙이기", "k"]], src: "성향은 분류별 칩: Coffee Meets Bagel · happn · 하루야 / 나와 겹치는 곳: Feeld · happn · 내친소" },
     badge: { label: "확인 배지", hint: "회사·학교 확인 같은 표시", auto: false, size: [104, 28], text: "✓ 회사 확인됨",
       props: { fill: "#E7F3FF", color: "#1D6FD8", size: 12.5, weight: "600", radius: 999 }, f: [["fill", "색", "c"], ["color", "글자 색", "c"], ["size", "글자 크기", "n", 9, 18, 0.5], ["weight", "글자 굵기", "s", FONT_W], ["radius", "둥글기", "n", 0, 999]], src: "확인 표시: Bumble · happn · Coffee Meets Bagel / 회사·학교 인증: 건너다" },
     friend: { label: "친구 한마디", hint: "소개해 준 친구가 남긴 말(지인 소개)", auto: true, size: [300, 90], text: "소개해 준 친구 민지\n약속 시간에 한 번도 늦은 적 없는 친구예요.",
       props: { fill: "#FFFBEA", color: "#3A3A3C", title: "#B07A00", size: 14.5, radius: 18, bw: 1, bc: "#F3E3A6" }, f: [["fill", "색", "c"], ["title", "첫 줄 색", "c"], ["color", "글자 색", "c"], ["size", "글자 크기", "n", 10, 22, 0.5], ["radius", "모서리 둥글기", "n", 0, 30], ["bw", "테두리 굵기", "n", 0, 4], ["bc", "테두리 색", "c"]], src: "남이 하는 말: 윌유 · 내친소" },
+    prompt: { label: "질문 카드", hint: "질문 하나와 그 사람의 답을 한 카드에(첫 줄은 질문, 다음 줄부터 답)", auto: true, size: [358, 120], text: "주말엔 보통 뭐 해요?\n한강에서 자전거를 타요.", textName: "질문 / 답(첫 줄 질문)",
+      props: { fill: "#F5F5F7", radius: 16, bw: 0, bc: "#E5E5EA", qColor: "#6B6B70", qSize: 13, qWeight: "500", color: "#1C1C1E", size: 22, weight: "500", aFont: "명조", lineH: 1.4, gap: 10, quote: false },
+      f: [["fill", "카드 색", "c"], ["qColor", "질문 글자 색", "c"], ["qSize", "질문 크기", "n", 10, 26], ["qWeight", "질문 굵기", "s", FONT_W], ["color", "답 글자 색", "c"], ["size", "답 글자 크기", "n", 12, 36], ["weight", "답 굵기", "s", FONT_W], ["aFont", "답 글꼴", "s", ["명조", "고딕"]], ["lineH", "답 줄 간격", "n", 1, 2.2, 0.05], ["gap", "질문과 답 사이", "n", 0, 40], ["quote", "따옴표 표시", "k"], ["radius", "모서리 둥글기", "n", 0, 40], ["bw", "테두리 굵기", "n", 0, 6], ["bc", "테두리 색", "c"]],
+      src: "질문 카드: Hinge · Bumble · The League · happn · 윌유" },
     divider: { label: "시간 표시", hint: "대화 가운데 작은 글씨(오늘 오후 2:10)", auto: true, size: [W, 24], text: "오늘의 소개 · 오후 2:10",
       props: { color: "#8E8E93", size: 12, line: false }, f: [["color", "글자 색", "c"], ["size", "글자 크기", "n", 9, 18], ["line", "양옆 줄", "k"]] },
     typing: { label: "입력 중 …", hint: "말하기 직전, 점 세 개", auto: false, size: [64, 40], text: false,
       props: { fill: "#F1EDEC", dot: "#A1A1A6", radius: 20, rLink: "tl,tr,br", rBL: 6 }, f: [["fill", "말풍선 색", "c"], ["dot", "점 색", "c"], ["radius", "둥글기", "n", 0, 30]], src: "기다림을 보이기: 카카오톡 안 읽음 ‘1’ · Slowly" },
     react: { label: "반응 하트", hint: "대답 옆 작은 하트(마음에 들면 누름)", auto: false, size: [34, 34], text: false,
-      props: { fill: "#FFFFFF", color: "#FF4A51", bc: "#F0E6E5", radius: 50 }, f: [["fill", "바탕", "c"], ["color", "하트 색", "c"], ["bc", "테두리", "c"], ["radius", "둥글기 %", "n", 0, 50]], src: "항목마다 하트: Hinge 4 / 답에 반응: Bumble 3" },
+      props: { fill: "#FFFFFF", color: "#FF4A51", bc: "#F0E6E5", radius: 50, outline: false }, f: [["fill", "바탕", "c"], ["color", "하트 색", "c"], ["outline", "선으로만(속 비우기)", "k"], ["bc", "테두리", "c"], ["radius", "둥글기 %", "n", 0, 50]], src: "항목마다 하트: Hinge 4 / 답에 반응: Bumble 3" },
     composer: { label: "입력창", hint: "첫마디를 써서 보내는 칸", auto: false, size: [358, 48], text: "첫마디를 건네 보세요",
       props: { fill: "#F4F2F1", color: "#8E8E93", send: "#FF4A51", radius: 24 }, f: [["fill", "칸 색", "c"], ["color", "안내 글 색", "c"], ["send", "보내기 색", "c"], ["radius", "둥글기", "n", 0, 30]] },
     text: { label: "글자", hint: "아무 글", auto: true, size: [300, 24], text: "글자를 써 주세요",
@@ -300,20 +323,129 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
     shape: { label: "도형", hint: "네모·동그라미 장식", auto: false, size: [120, 120], text: false,
       props: { fill: "#FFE0DC", op: 100, radius: 24, bw: 0, bc: "#FFFFFF" }, f: [["fill", "색", "c"], ["op", "불투명도 %", "n", 0, 100], ["radius", "모서리 둥글기", "n", 0, 999], ["bw", "테두리 굵기", "n", 0, 10], ["bc", "테두리 색", "c"]] },
   };
-  const ORDER = ["bg", "frame", "q", "a", "avatar", "photo", "btn", "topbar", "status", "info", "chips", "badge", "friend", "divider", "typing", "react", "composer", "text", "shape"];
+  const TP4 = (t, r, b, l) => ({ tpT: t, tpR: r, tpB: b, tpL: l });
+  const SHADOW = (b, y, o) => ({ dp: "바깥(떠 보이게)", dpB: b, dpY: y, dpO: o, dpC: "#000000" }), NOSHADOW = { dp: "없음" };
+  // 값은 레퍼런스 스크린샷을 크게 보고 잰 것(예: Hinge 카드 #FFFEFC · 바탕 #F6F6F6, 답은 큰 명조, 하트는 흰 동그라미에 가는 선)
+  const PRESETS = {
+    photo: [
+      { id: "hinge", name: "둥근 사진 + 흰 하트", src: "Hinge", props: { radius: 12, bw: 0, grad: false, cap: "아래 왼쪽", ...NOSHADOW }, m: 18 },
+      { id: "bumble", name: "사진 아래쪽에 이름", src: "Bumble · OkCupid", props: { radius: 16, bw: 0, grad: true, fill: "#000000", gop1: 0, fill2: "#000000", gop2: 45, angle: 180, cap: "아래 왼쪽", capSize: 30, capColor: "#FFFFFF", ...NOSHADOW }, m: 18 },
+      { id: "raya", name: "화면 가득 사진", src: "Raya · 글램 · 정오의데이트", props: { radius: 0, bw: 0, grad: true, fill: "#000000", gop1: 0, fill2: "#000000", gop2: 55, angle: 180, cap: "아래 왼쪽", capSize: 32, capColor: "#FFFFFF", ...NOSHADOW }, m: 0 },
+      { id: "breeze", name: "흰 테두리 떠 있는 카드", src: "Breeze · Hily", props: { radius: 24, bw: 5, bc: "#FFFFFF", grad: false, ...SHADOW(18, 6, 12) }, m: 18 },
+    ],
+    info: [
+      { id: "hinge", name: "아이콘 표(칸 나눔)", src: "Hinge", props: { look: "칸", icons: true, fill: "#FFFEFC", op: 100, radius: 12, bw: 0, bc: "#EDEDED", color: "#1C1C1E", size: 15, weight: "400", talign: "왼쪽", ...TP4(17, 16, 17, 16), ...NOSHADOW } },
+      { id: "happn", name: "아이콘 알약 칩", src: "happn · OkCupid", props: { look: "칩", icons: true, fill: "#F0EEE9", op: 100, radius: 999, bw: 0, color: "#1C1C1E", size: 14, weight: "500", talign: "왼쪽", ...TP4(8, 14, 8, 12), ...NOSHADOW } },
+      { id: "coffeeting", name: "한 줄에 하나", src: "커피팅 · 내친소", props: { look: "목록", icons: true, fill: "#FFFEFC", op: 100, radius: 12, bw: 0, bc: "#EDEDED", color: "#1C1C1E", size: 15, weight: "400", talign: "왼쪽", ...TP4(15, 18, 15, 18), ...NOSHADOW } },
+      { id: "breeze", name: "점으로 잇기", src: "Breeze · 정오의데이트", props: { look: "점으로 잇기", icons: false, op: 0, bw: 0, radius: 0, color: "#6B6B70", size: 15, weight: "400", talign: "왼쪽", ...TP4(2, 4, 2, 4), ...NOSHADOW } },
+    ],
+    prompt: [
+      { id: "hinge", name: "흰 카드 + 큰 명조 답", src: "Hinge", props: { fill: "#FFFEFC", op: 100, radius: 12, bw: 0, quote: false, qColor: "#1C1C1E", qSize: 15, qWeight: "600", color: "#1C1C1E", size: 27, weight: "600", aFont: "명조", lineH: 1.28, talign: "왼쪽", gap: 14, ...TP4(26, 24, 30, 24), ...NOSHADOW } },
+      { id: "league", name: "카드 없이 큰 명조", src: "The League", props: { op: 0, bw: 0, quote: false, qColor: "#6B6B70", qSize: 13, qWeight: "500", color: "#1C1C1E", size: 26, weight: "600", aFont: "명조", lineH: 1.25, talign: "왼쪽", gap: 6, ...TP4(12, 6, 12, 6), ...NOSHADOW } },
+      { id: "bumble", name: "흰 카드 + 굵은 답", src: "Bumble · Breeze", props: { fill: "#FFFFFF", op: 100, radius: 16, bw: 0, quote: false, qColor: "#6B6B70", qSize: 14, qWeight: "500", color: "#1C1C1E", size: 21, weight: "700", aFont: "고딕", lineH: 1.35, talign: "왼쪽", gap: 8, ...TP4(20, 20, 22, 20), ...SHADOW(16, 3, 8) } },
+      { id: "happn", name: "따옴표 크림 카드", src: "happn", props: { fill: "#F3EFE6", op: 100, radius: 20, bw: 0, quote: true, qColor: "#6B6B70", qSize: 13, qWeight: "500", color: "#1C1C1E", size: 22, weight: "700", aFont: "고딕", lineH: 1.35, talign: "가운데", gap: 10, ...TP4(24, 22, 26, 22), ...NOSHADOW } },
+      { id: "pairs", name: "연한 청록 칸 + 굵은 질문 + 색 답", src: "Pairs", props: { fill: "#F2FAFC", op: 100, radius: 12, bw: 0, quote: false, qColor: "#1C1C1E", qSize: 15, qWeight: "700", color: "#0B7C8A", size: 17, weight: "700", aFont: "고딕", lineH: 1.45, talign: "왼쪽", gap: 6, ...TP4(18, 18, 18, 18), ...NOSHADOW } },   // 측정: 칸 #F2FAFC. 답 청록은 대비 4.5:1이 되게 조금 진하게
+      { id: "tulip", name: "에세이: 작고 굵은 질문 + 회색 긴 글", src: "튤립", props: { fill: "#FFFFFF", op: 100, radius: 20, bw: 0, quote: false, qColor: "#1C1C1E", qSize: 14, qWeight: "700", color: "#55555A", size: 14, weight: "400", aFont: "고딕", lineH: 1.7, talign: "왼쪽", gap: 6, ...TP4(22, 22, 24, 22), ...SHADOW(24, 4, 6) } },
+      { id: "willyou", name: "굵은 질문 + 회색 답", src: "윌유", props: { fill: "#FFFFFF", op: 100, radius: 16, bw: 1, bc: "#EDEDED", quote: false, qColor: "#1C1C1E", qSize: 18, qWeight: "700", color: "#6B6B70", size: 15, weight: "400", aFont: "고딕", lineH: 1.6, talign: "왼쪽", gap: 8, ...TP4(20, 20, 22, 20), ...NOSHADOW } },
+    ],
+    chips: [
+      { id: "cmb", name: "카드 안 흰 테두리 칩", src: "Coffee Meets Bagel", props: { box: true, boxFill: "#FFFEFC", boxRadius: 12, fill: "#FFFFFF", op: 100, bw: 1, bc: "#DEDEE2", color: "#1C1C1E", title: "#1C1C1E", size: 14, radius: 999, hash: false, talign: "왼쪽", ...TP4(8, 14, 8, 14) } },
+      { id: "badoo", name: "# 연보라 칩", src: "Badoo", props: { box: true, boxFill: "#FFFEFC", boxRadius: 12, fill: "#EEE6FB", op: 100, bw: 0, color: "#5B3FA8", title: "#1C1C1E", size: 14, radius: 999, hash: true, talign: "왼쪽", ...TP4(8, 14, 8, 14) } },
+      { id: "muzz", name: "회색 네모 칩", src: "Muzz · 위피", props: { box: true, boxFill: "#FFFEFC", boxRadius: 12, fill: "#F2F2F3", op: 100, bw: 0, color: "#333336", title: "#1C1C1E", size: 14, radius: 10, hash: false, talign: "왼쪽", ...TP4(8, 12, 8, 12) } },
+      { id: "pink", name: "분홍 칩(처음 1안)", src: "우리 1안", props: { box: false, fill: "#FFE7E5", op: 100, bw: 0, color: "#C2333A", title: "#8E8E93", size: 14, radius: 999, hash: false, talign: "가운데", ...TP4(6, 12, 6, 12) } },
+    ],
+    badge: [
+      { id: "bumble", name: "파란 인증", src: "Bumble", props: { fill: "#2F6BFF", op: 100, color: "#FFFFFF", radius: 999, weight: "600" } },
+      { id: "hinge", name: "옅은 보라 인증", src: "Hinge", props: { fill: "#F1EAFB", op: 100, color: "#6A3E9C", radius: 999, weight: "700" } },
+      { id: "glass", name: "사진 위 흰 반투명", src: "happn · Hinge", props: { fill: "#FFFFFF", op: 90, color: "#1C1C1E", radius: 999, weight: "600" } },
+      { id: "sky", name: "옅은 하늘(처음 1안)", src: "우리 1안", props: { fill: "#E7F3FF", op: 100, color: "#1D6FD8", radius: 999, weight: "600" } },
+    ],
+    react: [
+      { id: "hinge", name: "흰 동그라미 + 가는 선 하트", src: "Hinge · Coffee Meets Bagel", props: { fill: "#FFFFFF", op: 100, color: "#E2555A", bc: "#EFEFEF", radius: 50, outline: true } },
+      { id: "league", name: "진한 동그라미 + 흰 하트", src: "The League", props: { fill: "#3F4543", op: 100, color: "#FFFFFF", bc: "#3F4543", radius: 50, outline: true } },   // 측정 #3F4543
+      { id: "tinder", name: "빨간 동그라미 하트", src: "틴더 · 글램", props: { fill: "#FF4A51", op: 100, color: "#FFFFFF", bc: "#FF4A51", radius: 50, outline: false } },
+    ],
+    friend: [
+      { id: "naechinso", name: "흰 카드", src: "내친소", props: { fill: "#FFFEFC", op: 100, title: "#6B6B70", color: "#1C1C1E", bw: 0, radius: 12, size: 15, ...TP4(20, 22, 22, 22) } },
+      { id: "willyou", name: "하늘색 큐레이터 말", src: "윌유", props: { fill: "#EEF4FF", op: 100, title: "#1D5FD6", color: "#1C1C1E", bw: 0, radius: 16, size: 15, ...TP4(18, 20, 20, 20) } },
+      { id: "yellow", name: "노란 쪽지(처음 1안)", src: "우리 1안", props: { fill: "#FFFBEA", op: 100, title: "#B07A00", color: "#3A3A3C", bw: 1, bc: "#F3E3A6", radius: 18, size: 14.5, ...TP4(12, 14, 12, 14) } },
+    ],
+    topbar: [
+      { id: "center", name: "가운데 이름", src: "Hinge", props: { talign: "가운데", size: 17, weight: "700", line: true, lineC: "#EDEDED", fill: "#FFFEFC", op: 96 } },
+      { id: "left", name: "왼쪽 큰 이름", src: "Lex · 내친소", props: { talign: "왼쪽", size: 22, weight: "800", line: false, fill: "#FFFFFF", op: 96 } },
+    ],
+  };
+  // ---------- 화면 전체: 레퍼런스 분석으로 고르기 ----------
+  // 앱 35곳의 프로필 화면 58장(2026-11-02, 앱스토어 공식 스크린샷)을 같은 기준으로 세고 잰 결과예요. n = 그렇게 한 앱, why = 이유(원문을 확인한 자료)
+  // 자세한 표와 근거는 ‘프로필 화면 분석’ 페이지(docs/research/2026-11-02-프로필-화면-분석.md)
+  const SURF = [   // 바탕과 글 칸: 바탕색으로 사진·글과 차이를 두는 방법
+    { id: "grey", name: "연회색 바탕 + 흰 카드(그림자 없음)", n: "Hinge · 윌유 · Hily", why: "바탕(#F6F6F6)과 카드(#FFFEFC) 색 차이만으로 묶음이 보여요. 테두리·그림자를 덜 써서 덜 복잡해요(NN/g: 테두리·색 상자가 많으면 어수선).", bg: "#F6F6F6", bar: "#FFFEFC", card: { fill: "#FFFEFC", op: 100, bw: 0, ...NOSHADOW }, pad: [26, 24, 30, 24] },
+    { id: "tint", name: "흰 바탕 + 연한 색 칸", n: "Coffee Meets Bagel · Pairs · 블라인드데이트", why: "흰 바탕에서는 칸을 바탕보다 살짝 진한 색으로 깔아 묶어요(그림자 없이). 측정: CMB #ECEDFF, Pairs #F2FAFC, 블라인드데이트 #F8F8FA.", bg: "#FFFFFF", bar: "#FFFFFF", card: { fill: "#F5F6F8", op: 100, bw: 0, ...NOSHADOW }, pad: [24, 22, 26, 22] },
+    { id: "shadow", name: "흰 바탕 + 그림자 카드", n: "윌유(오늘의 인연) · 코코 · 튤립", why: "흰 바탕 위 흰 카드는 색 차이가 없어 옅고 넓은 그림자로 경계를 보여요(윌유 카드 아래가 #E8E6E9 → #FFFFFF로 번짐, 측정).", bg: "#FFFFFF", bar: "#FFFFFF", card: { fill: "#FFFFFF", op: 100, bw: 0, ...SHADOW(20, 4, 8) }, pad: [24, 22, 26, 22] },
+    { id: "line", name: "흰 바탕 + 테두리 카드", n: "커피팅 · Boo", why: "그림자 대신 가는 선으로 경계를 보여요.", bg: "#FFFFFF", bar: "#FFFFFF", card: { fill: "#FFFFFF", op: 100, bw: 1, bc: "#E5E5EA", ...NOSHADOW }, pad: [24, 22, 26, 22] },
+    { id: "plain", name: "미색 바탕 + 칸 없이 글", n: "The League · Lex · Match · tapple", why: "칸 없이 여백만으로 나눠요(League·Lex는 미색 바탕, Match·tapple은 흰 바탕). 글이 바탕에 바로 놓여 잡지처럼 보여요(NN/g: 가까이 둔 것은 한 묶음, 여백만으로도 묶을 수 있음). 측정: League #F4F1EC.", bg: "#F4F1EC", bar: "#F4F1EC", card: { op: 0, bw: 0, ...NOSHADOW }, pad: [10, 4, 10, 4] },
+  ];
+  const QAS = [   // 질문과 답을 어떻게 나누나(글자 크기·굵기·글꼴)
+    { id: "bigSerif", name: "질문 작게 · 답 크게(명조)", n: "Hinge · The League · Match", why: "답이 질문보다 1.7~2배 커요(측정: League 1.9~2.0, Match 2.0, Bumble 1.7). 질문은 사람마다 같고 새 내용은 답이라, 훑어 내릴 때 답이 먼저 걸리게 해요(우리 해석).", props: { qColor: "#3A3A3C", qSize: 14, qWeight: "600", color: "#1C1C1E", size: 26, weight: "600", aFont: "명조", lineH: 1.28, gap: 12, quote: false } },
+    { id: "bigSans", name: "질문 작게 · 답 크게(굵은 고딕)", n: "Bumble · happn · 틴더 · Coffee Meets Bagel", why: "같은 원리를 굵은 고딕으로. 더 또렷하고 가벼워 보여요.", props: { qColor: "#6B6B70", qSize: 14, qWeight: "500", color: "#1C1C1E", size: 22, weight: "700", aFont: "고딕", lineH: 1.35, gap: 8, quote: false } },
+    { id: "headQ", name: "질문 굵게(제목처럼) · 답 회색 본문", n: "윌유 · 내친소 · 튤립 · Pairs · tapple", why: "질문을 제목처럼 굵게 둬요(윌유는 질문이 답의 1.5배, 측정). 제목만 훑다가 궁금한 곳에서 본문을 읽는 ‘층 케이크’ 읽기에 맞고, 답이 길 때 좋아요(NN/g).", props: { qColor: "#1C1C1E", qSize: 17, qWeight: "700", color: "#55555A", size: 15, weight: "400", aFont: "고딕", lineH: 1.6, gap: 8, quote: false } },
+  ];
+  const ACTS = [   // 아래 버튼 배치(넘기기 · 주 버튼)
+    { id: "circlePill", name: "넘기기 동그라미(왼쪽) + 넓은 주 버튼(오른쪽)", n: "넘기기 왼쪽: The League · Muzz · 글램 · Zoosk 등 13곳", why: "넘기기와 좋아요가 같이 있는 앱 13곳 모두 넘기기(✕·거절·되돌리기)가 왼쪽, 좋아요·수락이 그 오른쪽이에요(측정). 한 손으로 쓸 때 67%가 오른손 엄지예요(Hoober 2013)." },
+    { id: "twoPills", name: "알약 둘: 다음에(왼쪽·연하게) + 첫마디(오른쪽·넓게)", n: "Boo · 블라인드데이트", why: "둘 다 글로 써서 뜻이 분명해요. 주 버튼은 오른쪽에 더 넓고 진하게." },
+    { id: "bar", name: "꽉 찬 주 버튼 하나", n: "Omiai · 더블유클럽", why: "할 일이 하나뿐일 때. 넘기기는 뒤로 가기로 해요." },
+    { id: "circles", name: "동그라미 둘(가운데): ✕ + ♥(오른쪽·더 크게)", n: "Zoosk · The League · Raya · Hily", why: "주 버튼을 더 크고 진하게(League 하트 22% vs X 14%, Raya 18.7% vs 14.7%, 화면 폭 대비 측정). 글 대신 하트라 ‘첫마디 보내기’는 ♥로 바뀌어요." },
+    { id: "fab", name: "오른쪽 아래 떠 있는 동그라미 하나", n: "Match(별)", why: "판 없이 내용을 끝까지 보여 주고, 주 버튼만 오른쪽 아래에 띄워요." },
+  ];
+  const HEARTS = [   // 항목마다 하트(어디가 마음에 들었는지 남기기)
+    { id: "photo", name: "사진마다", n: "Coffee Meets Bagel · Cuffed · The League", why: "사진 오른쪽 아래(League는 왼쪽 위)에 흰 동그라미 하트." },
+    { id: "both", name: "사진과 질문 카드마다", n: "Hinge · Bumble", why: "Hinge는 사진·질문 카드·고르기 항목마다, Bumble은 카드 아래 오른쪽에 하트를 둬요. 하트는 그 항목 바로 옆(Apple: 조작은 그 내용 가까이)." },
+    { id: "none", name: "없음(아래 버튼만)", n: "Omiai · Raya · 블릿", why: "반응은 아래 버튼에서만 해요." },
+  ];
+  const THEMES = [   // 한꺼번에: 위 고르기를 한 묶음으로
+    { id: "card", name: "카드형", n: "Hinge 계열", why: "연회색 바탕 + 흰 카드, 큰 명조 답, 표로 된 기본 정보, 사진·질문마다 하트, 넘기기 왼쪽 + 주 버튼 오른쪽.", set: { photo: "hinge", info: "hinge", chips: "cmb", friend: "willyou", surf: "grey", qa: "bigSerif", act: "circlePill", hearts: "both", align: "왼쪽", margin: 20 } },
+    { id: "page", name: "판형", n: "Match · The League 계열", why: "미색 바탕에 칸 없이 글, 화면 가득 사진, 점으로 이은 정보, 가운데 동그라미 버튼.", set: { photo: "raya", info: "breeze", chips: "badoo", friend: "willyou", surf: "plain", qa: "bigSerif", act: "circles", hearts: "photo", align: "왼쪽", margin: 20 } },
+    { id: "korean", name: "제목형", n: "윌유 · 내친소 계열", why: "흰 바탕 + 그림자 카드, 질문을 제목처럼 굵게 · 답은 회색 본문, 한 줄에 하나 정보, 글로 쓴 버튼 둘.", set: { photo: "hinge", info: "coffeeting", chips: "muzz", friend: "willyou", surf: "shadow", qa: "headQ", act: "twoPills", hearts: "photo", align: "왼쪽", margin: 20 } },
+    { id: "tint", name: "색 칸형", n: "Coffee Meets Bagel · Pairs 계열", why: "흰 바탕 + 연한 색 칸, 굵은 고딕 답, 칩으로 된 정보, 꽉 찬 주 버튼 하나.", set: { photo: "bumble", info: "happn", chips: "badoo", friend: "naechinso", surf: "tint", qa: "bigSans", act: "bar", hearts: "photo", align: "왼쪽", margin: 16 } },
+  ];
+  // 기본 정보 아이콘: 가는 선 그림(우리가 그린 것). 칸 글을 보고 저절로 골라요(나이·키·사는 곳·하는 일·MBTI·흡연·술·학력·연애)
+  const ICON = {
+    cake: "M4 20h16M5 20v-7a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v7M5 15.5c2.3 1.4 4.7 1.4 7 0s4.7-1.4 7 0M12 11V8.5M12 6.2c.8 0 1.3-.6 1.3-1.3C13.3 4 12 2.8 12 2.8s-1.3 1.2-1.3 2.1c0 .7.5 1.3 1.3 1.3Z",
+    ruler: "M8.5 3h7v18h-7zM8.5 7h3M8.5 10.5h4.5M8.5 14h3M8.5 17.5h4.5",
+    pin: "M12 21s-6.5-5.6-6.5-10.8a6.5 6.5 0 0 1 13 0C18.5 15.4 12 21 12 21ZM12 12.6a2.4 2.4 0 1 0 0-4.8 2.4 2.4 0 0 0 0 4.8Z",
+    bag: "M4 8h16v11.5H4zM9 8V6.2C9 5 9.9 4 11 4h2c1.1 0 2 1 2 2.2V8M4 13h16",
+    spark: "M12 3.5l1.9 5 5.1 1.8-5.1 1.8-1.9 5-1.9-5L5 10.3l5.1-1.8ZM18.5 16.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7Z",
+    leaf: "M5.5 18.5C5.5 10.8 11 6 19 5c0 8.6-5 13.5-13.5 13.5ZM5.5 18.5l7-7",
+    glass: "M7 4h10l-1 6.2a4 4 0 0 1-8 0ZM12 14.2V20M8.5 20h7",
+    cap: "M2.8 9.3 12 5.2l9.2 4.1L12 13.4ZM6.8 11.6v3.8c0 1.4 2.4 2.9 5.2 2.9s5.2-1.5 5.2-2.9v-3.8M21.2 9.3v5",
+    heart: "M12 20s-7-4.3-7-9.7A4 4 0 0 1 12 7.8a4 4 0 0 1 7 2.5C19 15.7 12 20 12 20Z",
+    dot: "M12 13.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z",
+  };
+  const iconFor = (t) => { t = String(t).trim();
+    if (/^\d+\s*(세|살)$|년생$/.test(t)) return "cake"; if (/cm$|^키/.test(t)) return "ruler"; if (/^[EI][NS][TF][JP]$/i.test(t)) return "spark";
+    if (/흡연|담배/.test(t)) return "leaf"; if (/술|음주/.test(t)) return "glass"; if (/대학|학교|졸업|석사|학사|박사/.test(t)) return "cap"; if (/연애|진지|결혼|만남/.test(t)) return "heart";
+    if (/서울|부산|인천|대구|대전|광주|울산|세종|경기|강원|충북|충남|전북|전남|경북|경남|제주|[시구동읍군]$/.test(t)) return "pin";
+    if (/디자이너|개발자|회사|마케터|기획|교사|선생|간호|의사|변호사|엔지니어|직장|프리랜서|연구|작가|PM|PD|대표|사원/.test(t)) return "bag"; return "dot"; };
+  const iconSVG = (t, color) => `<svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" style="flex:none;display:block"><path d="${ICON[iconFor(t)]}" fill="none" stroke="${color}" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const ORDER = ["bg", "frame", "photo", "prompt", "q", "a", "avatar", "btn", "topbar", "status", "info", "chips", "badge", "friend", "divider", "typing", "react", "composer", "text", "shape"];
 
   // 그라데이션: 색이 있는 요소는 모두 [색 키, 켰을 때 둘째 색 처음 값, 방향]. 글자만 있는 요소는 글자에 그라데이션
-  const GRAD = { frame: ["fill", "#FFF4F2", 180], shape: ["fill", "#FFF1D6", 135], q: ["fill", "#E4DEDC", 180], a: ["fill", "#FE9D6C", 135], avatar: ["bg", "#FFF0EE", 180], btn: ["fill", "#FE9D6C", 90], topbar: ["fill", "#FFF4F2", 180], status: ["fill", "#FFF4F2", 180], info: ["fill", "#FFF7F5", 180], chips: ["fill", "#FFF3E8", 90], badge: ["fill", "#F0EBFF", 90], friend: ["fill", "#FFF1E0", 160], typing: ["fill", "#FFFFFF", 180], react: ["fill", "#FFE7E5", 160], composer: ["fill", "#FFFFFF", 90], text: ["color", "#FF4A51", 90], divider: ["color", "#FF4A51", 90] };
+  const GRAD = { prompt: ["fill", "#FFFFFF", 180], frame: ["fill", "#FFF4F2", 180], shape: ["fill", "#FFF1D6", 135], q: ["fill", "#E4DEDC", 180], a: ["fill", "#FE9D6C", 135], avatar: ["bg", "#FFF0EE", 180], btn: ["fill", "#FE9D6C", 90], topbar: ["fill", "#FFF4F2", 180], status: ["fill", "#FFF4F2", 180], info: ["fill", "#FFF7F5", 180], chips: ["fill", "#FFF3E8", 90], badge: ["fill", "#F0EBFF", 90], friend: ["fill", "#FFF1E0", 160], typing: ["fill", "#FFFFFF", 180], react: ["fill", "#FFE7E5", 160], composer: ["fill", "#FFFFFF", 90], text: ["color", "#FF4A51", 90], divider: ["color", "#FF4A51", 90] };
   for (const [kind, [key, c2, ang]] of Object.entries(GRAD)) {
     const k = KINDS[kind]; k.f = k.f.slice(); Object.assign(k.props, { grad: false, fill2: c2, angle: ang });
     const ink = key === "color", i = k.f.findIndex((f) => f[0] === key);
     k.f.splice(i + 1, 0, ["grad", ink ? "글자 그라데이션" : "그라데이션", "k"], ["fill2", ink ? "글자 둘째 색" : "둘째 색", "c"], ["angle", "그라데이션 방향", "n", 0, 360]);
   }
+  const OPN = { prompt: "카드 불투명도 %", q: "말풍선 불투명도 %", a: "말풍선 불투명도 %", info: "바탕 불투명도 %", chips: "칩 불투명도 %", badge: "바탕 불투명도 %", friend: "바탕 불투명도 %", typing: "말풍선 불투명도 %", react: "바탕 불투명도 %", composer: "칸 불투명도 %" };
+  for (const [kind, label] of Object.entries(OPN)) {   // 0이면 바탕 없이 글자만
+    const k = KINDS[kind]; if ("op" in k.props) continue; k.props.op = 100;
+    const i = k.f.findIndex((f) => f[0] === "angle"); k.f.splice(i + 1, 0, ["op", label, "n", 0, 100]);
+  }
   // 안의 글 맞추기(왼쪽·가운데·오른쪽): 글이 들어가는 칸
   // 글: 글이 들어가는 칸은 모두 ‘글’ 상자에서 글자 크기·굵기·맞추기(왼쪽·가운데·오른쪽)·글 여백(글자와 칸 끝 사이, 위·아래·왼쪽·오른쪽)을 골라요
   //     크기를 ‘글에 맞춰’로 하면 칸 = 글자 + 글 여백(글자가 커지면 칸도 커져요)
   const TXT = {   // [맞추기 처음 값, 굵기 처음 값, 글 여백 위·오른쪽·아래·왼쪽 처음 값]
-    q: ["왼쪽", null, [10, 14, 10, 14]], a: ["왼쪽", null, [10, 14, 10, 14]], btn: ["가운데", null, [0, 12, 0, 12]], topbar: ["가운데", null, [0, 0, 0, 0]],
+    prompt: ["왼쪽", null, [20, 20, 20, 20]], q: ["왼쪽", null, [10, 14, 10, 14]], a: ["왼쪽", null, [10, 14, 10, 14]], btn: ["가운데", null, [0, 12, 0, 12]], topbar: ["가운데", null, [0, 0, 0, 0]],
     status: ["왼쪽", "600", [6, 30, 0, 34]], info: ["가운데", "400", [9, 4, 9, 4]], chips: ["가운데", "400", [6, 12, 6, 12]], badge: ["가운데", null, [0, 8, 0, 8]],
     friend: ["왼쪽", "400", [12, 14, 12, 14]], divider: ["가운데", "400", [2, 16, 2, 16]], composer: ["왼쪽", "400", [0, 6, 0, 16]], text: ["가운데", null, [0, 0, 0, 0]],
   };
@@ -331,14 +463,14 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
   KINDS.photo.f = KINDS.photo.f.concat([["grad", "그라데이션 덮기", "k"], ["fill", "덮개 색 1", "c"], ["gop1", "색 1 진하기 %", "n", 0, 100], ["fill2", "덮개 색 2", "c"], ["gop2", "색 2 진하기 %", "n", 0, 100], ["angle", "그라데이션 방향", "n", 0, 360]]);
 
   // 명암(그림자): 모든 칸(배경 빼고). 바깥 = 둘레에 그림자(떠 보이게), 안쪽 = 가장자리 안쪽이 어두워져 가운데가 볼록해 보여요. 그림자 색을 골라요
-  const DP_BOX = new Set(["q", "a", "btn", "frame", "shape", "info", "badge", "friend", "typing", "react", "composer", "topbar", "status", "photo"]);   // 상자 모양: 안쪽 명암도
+  const DP_BOX = new Set(["prompt", "q", "a", "btn", "frame", "shape", "info", "badge", "friend", "typing", "react", "composer", "topbar", "status", "photo"]);   // 상자 모양: 안쪽 명암도
   const DP_OPT = ["없음", "바깥(떠 보이게)", "안쪽(가운데가 볼록)", "둘 다"];
   for (const [kind, k] of Object.entries(KINDS)) {
     if (kind === "bg") continue;
     Object.assign(k.props, kind === "frame" ? { dp: "바깥(떠 보이게)", dpC: "#000000", dpB: 24, dpO: 8, dpY: 8 } : { dp: "없음", dpC: "#000000", dpB: 12, dpO: 15, dpY: 0 });
     k.f = k.f.concat([["dp", "명암(그림자)", "s", DP_BOX.has(kind) ? DP_OPT : DP_OPT.slice(0, 2)], ["dpC", "그림자 색", "c"], ["dpB", "그림자 퍼짐", "n", 0, 60], ["dpO", "그림자 진하기 %", "n", 0, 100], ["dpY", "그림자 아래로(0이면 사방 고르게)", "n", -20, 20]]);
   }
-  const MH = { info: "g", chips: "c", friend: "c", text: "c", divider: "" };   // 글에 맞춰 높이가 정해지는 칸: ‘칸 높이’(0이면 글에 맞춰, 키우면 글은 세로 가운데)
+  const MH = { prompt: "c", info: "g", chips: "c", friend: "c", text: "c", divider: "" };   // 글에 맞춰 높이가 정해지는 칸: ‘칸 높이’(0이면 글에 맞춰, 키우면 글은 세로 가운데)
   for (const kind of Object.keys(MH)) { KINDS[kind].props.minH = 0; KINDS[kind].f.splice(Math.min(KINDS[kind].f.length, 1), 0, ["minH", "칸 높이(0이면 글에 맞춰)", "n", 0, 400]); }
   function dpStyle(e, p) {   // 명암을 칸에 입혀요: [덧붙일 class, style]. 사진·정보 줄은 바깥이 잘리는 상자라 바깥 그림자를 칸 전체에(filter)
     if (e.kind === "bg" || !p.dp || p.dp === "없음") return ["", ""];
@@ -356,48 +488,49 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
   const MDEF = { frame: { mt: 7, mb: 8, ml: 12, mr: 12 } };   // 대화 틀: 위 = 위에 고정한 칸(상단 바)과 사이, 아래 = 아래 고정 칸(버튼 판)과 사이
   const Z0 = { mt: 0, mb: 0, ml: 0, mr: 0 };   // 대화 흐름이 아닌 칸은 처음 여백 0(놓은 자리 그대로). 여백을 주면 그만큼 다른 칸과 떨어져요
 
+  // 예시 사진: 우리가 그린 그림(실제 사람 사진 대신). 사진 고르기로 바꿔요
+  const SAMPLE_PHOTOS = ["<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 400 480\" preserveAspectRatio=\"xMidYMid slice\"><defs><linearGradient id=\"s\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#F4C9B8\"/><stop offset=\".45\" stop-color=\"#F7DCC7\"/><stop offset=\".62\" stop-color=\"#FBE9D6\"/></linearGradient><linearGradient id=\"w\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#E9C2B4\"/><stop offset=\"1\" stop-color=\"#B9A3A6\"/></linearGradient><linearGradient id=\"g\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#8E9B7C\"/><stop offset=\"1\" stop-color=\"#5F6B55\"/></linearGradient><radialGradient id=\"sun\" cx=\".5\" cy=\".5\" r=\".5\"><stop offset=\"0\" stop-color=\"#FFF6E8\"/><stop offset=\".6\" stop-color=\"#FFE7CF\"/><stop offset=\"1\" stop-color=\"#FFE7CF\" stop-opacity=\"0\"/></radialGradient><filter id=\"n\"><feTurbulence type=\"fractalNoise\" baseFrequency=\".9\" numOctaves=\"2\" stitchTiles=\"stitch\"/><feColorMatrix values=\"0 0 0 0 .5 0 0 0 0 .4 0 0 0 0 .35 0 0 0 .22 0\"/></filter></defs><rect width=\"400\" height=\"480\" fill=\"url(#s)\"/><circle cx=\"270\" cy=\"258\" r=\"70\" fill=\"url(#sun)\"/><circle cx=\"270\" cy=\"262\" r=\"20\" fill=\"#FFF3E2\"/><g fill=\"#C9A9A6\" opacity=\".85\"><rect x=\"0\" y=\"262\" width=\"22\" height=\"34\"/><rect x=\"24\" y=\"250\" width=\"16\" height=\"46\"/><rect x=\"42\" y=\"268\" width=\"26\" height=\"28\"/><rect x=\"70\" y=\"244\" width=\"12\" height=\"52\"/><rect x=\"84\" y=\"258\" width=\"30\" height=\"38\"/><rect x=\"118\" y=\"270\" width=\"20\" height=\"26\"/><rect x=\"300\" y=\"262\" width=\"18\" height=\"34\"/><rect x=\"320\" y=\"248\" width=\"14\" height=\"48\"/><rect x=\"336\" y=\"266\" width=\"28\" height=\"30\"/><rect x=\"366\" y=\"256\" width=\"34\" height=\"40\"/></g><rect x=\"0\" y=\"292\" width=\"400\" height=\"6\" fill=\"#B79C9E\"/><g stroke=\"#A88E92\" stroke-width=\"2\" fill=\"none\" opacity=\".9\"><path d=\"M0 292 Q50 270 100 292 Q150 270 200 292 Q250 270 300 292 Q350 270 400 292\"/></g><rect x=\"0\" y=\"298\" width=\"400\" height=\"80\" fill=\"url(#w)\"/><g stroke=\"#FFF1E2\" stroke-linecap=\"round\" opacity=\".7\"><path d=\"M235 312h70M245 322h50M228 334h88M250 346h40M240 360h62\" stroke-width=\"2\"/></g><path d=\"M0 372 Q120 352 230 366 T400 360 V480 H0Z\" fill=\"url(#g)\"/><g fill=\"none\" stroke=\"#2E2A2A\" stroke-width=\"3.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><circle cx=\"118\" cy=\"420\" r=\"22\"/><circle cx=\"186\" cy=\"420\" r=\"22\"/><path d=\"M118 420 L142 392 L176 392 L186 420 M142 392 L156 420 L176 392 M156 420 L118 420 M140 386 h12 M176 392 l-4 -10 h10\"/></g><rect width=\"400\" height=\"480\" filter=\"url(#n)\"/></svg>", "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 400 480\" preserveAspectRatio=\"xMidYMid slice\"><defs><linearGradient id=\"bg\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#EFE3D3\"/><stop offset=\"1\" stop-color=\"#E2CFB8\"/></linearGradient><linearGradient id=\"tb\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#C79E78\"/><stop offset=\"1\" stop-color=\"#A9805E\"/></linearGradient><radialGradient id=\"br\" cx=\".45\" cy=\".35\" r=\".7\"><stop offset=\"0\" stop-color=\"#F3D2A0\"/><stop offset=\".55\" stop-color=\"#DDA868\"/><stop offset=\"1\" stop-color=\"#B9773E\"/></radialGradient><radialGradient id=\"sh\" cx=\".5\" cy=\".5\" r=\".5\"><stop offset=\"0\" stop-color=\"#5A3C26\" stop-opacity=\".35\"/><stop offset=\"1\" stop-color=\"#5A3C26\" stop-opacity=\"0\"/></radialGradient><filter id=\"n\"><feTurbulence type=\"fractalNoise\" baseFrequency=\".9\" numOctaves=\"2\" stitchTiles=\"stitch\"/><feColorMatrix values=\"0 0 0 0 .45 0 0 0 0 .35 0 0 0 0 .25 0 0 0 .2 0\"/></filter></defs><rect width=\"400\" height=\"480\" fill=\"url(#bg)\"/><rect x=\"0\" y=\"230\" width=\"400\" height=\"250\" fill=\"url(#tb)\"/><g stroke=\"#9A7253\" stroke-width=\"1.4\" opacity=\".5\"><path d=\"M0 268 C120 262 260 274 400 266M0 318 C140 312 250 324 400 316M0 380 C120 374 260 386 400 378M0 440 C140 434 250 446 400 438\"/></g><rect x=\"60\" y=\"250\" width=\"280\" height=\"190\" rx=\"6\" fill=\"#F7EFE4\" transform=\"rotate(-4 200 345)\"/><rect x=\"60\" y=\"250\" width=\"280\" height=\"190\" rx=\"6\" fill=\"none\" stroke=\"#E6D7C4\" stroke-width=\"2\" transform=\"rotate(-4 200 345)\"/><ellipse cx=\"160\" cy=\"362\" rx=\"70\" ry=\"16\" fill=\"url(#sh)\"/><ellipse cx=\"260\" cy=\"336\" rx=\"64\" ry=\"14\" fill=\"url(#sh)\"/><ellipse cx=\"205\" cy=\"402\" rx=\"62\" ry=\"13\" fill=\"url(#sh)\"/><g><path d=\"M96 352 C96 318 132 300 160 300 C190 300 226 316 226 350 C226 362 196 366 160 366 C126 366 96 364 96 352Z\" fill=\"url(#br)\"/><path d=\"M120 322 C140 314 176 312 200 322\" stroke=\"#F6DDB4\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\" opacity=\".8\"/><g fill=\"#FFFFFF\" opacity=\".9\"><circle cx=\"140\" cy=\"318\" r=\"1.8\"/><circle cx=\"156\" cy=\"312\" r=\"1.6\"/><circle cx=\"172\" cy=\"314\" r=\"1.8\"/><circle cx=\"188\" cy=\"318\" r=\"1.6\"/><circle cx=\"150\" cy=\"326\" r=\"1.4\"/><circle cx=\"178\" cy=\"324\" r=\"1.5\"/></g></g><g><path d=\"M200 328 C200 298 232 282 258 282 C286 282 318 296 318 326 C318 336 290 340 258 340 C226 340 200 338 200 328Z\" fill=\"url(#br)\"/><path d=\"M222 300 C240 294 270 292 292 300\" stroke=\"#F6DDB4\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\" opacity=\".8\"/><g fill=\"#FFFFFF\" opacity=\".9\"><circle cx=\"242\" cy=\"296\" r=\"1.8\"/><circle cx=\"258\" cy=\"292\" r=\"1.6\"/><circle cx=\"274\" cy=\"294\" r=\"1.8\"/><circle cx=\"252\" cy=\"304\" r=\"1.4\"/></g></g><g><path d=\"M146 392 C146 364 176 350 202 350 C228 350 258 364 258 390 C258 400 232 404 202 404 C172 404 146 402 146 392Z\" fill=\"url(#br)\"/><path d=\"M166 368 C184 362 212 360 234 368\" stroke=\"#F6DDB4\" stroke-width=\"3\" fill=\"none\" stroke-linecap=\"round\" opacity=\".8\"/><g fill=\"#FFFFFF\" opacity=\".9\"><circle cx=\"186\" cy=\"364\" r=\"1.8\"/><circle cx=\"202\" cy=\"360\" r=\"1.6\"/><circle cx=\"218\" cy=\"362\" r=\"1.8\"/></g></g><rect width=\"400\" height=\"480\" filter=\"url(#n)\"/></svg>", "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 400 480\" preserveAspectRatio=\"xMidYMid slice\"><defs><linearGradient id=\"wl\" x1=\"0\" y1=\"0\" x2=\"1\" y2=\"1\"><stop offset=\"0\" stop-color=\"#E7ECE6\"/><stop offset=\"1\" stop-color=\"#CFD8D0\"/></linearGradient><linearGradient id=\"tb\" x1=\"0\" y1=\"0\" x2=\"0\" y2=\"1\"><stop offset=\"0\" stop-color=\"#F2EEE8\"/><stop offset=\"1\" stop-color=\"#E3DCD2\"/></linearGradient><radialGradient id=\"cof\" cx=\".45\" cy=\".4\" r=\".6\"><stop offset=\"0\" stop-color=\"#C08A5B\"/><stop offset=\".7\" stop-color=\"#8A5A36\"/><stop offset=\"1\" stop-color=\"#6B4428\"/></radialGradient><radialGradient id=\"sh\" cx=\".5\" cy=\".5\" r=\".5\"><stop offset=\"0\" stop-color=\"#4A4A3A\" stop-opacity=\".28\"/><stop offset=\"1\" stop-color=\"#4A4A3A\" stop-opacity=\"0\"/></radialGradient><filter id=\"n\"><feTurbulence type=\"fractalNoise\" baseFrequency=\".9\" numOctaves=\"2\" stitchTiles=\"stitch\"/><feColorMatrix values=\"0 0 0 0 .4 0 0 0 0 .42 0 0 0 0 .38 0 0 0 .18 0\"/></filter></defs><rect width=\"400\" height=\"480\" fill=\"url(#wl)\"/><g fill=\"#F7F8F3\" opacity=\".75\"><rect x=\"40\" y=\"0\" width=\"150\" height=\"190\"/><rect x=\"210\" y=\"0\" width=\"150\" height=\"190\"/></g><g fill=\"#B8C6B5\" opacity=\".55\"><path d=\"M60 190 C70 150 90 120 120 110 C110 140 100 170 96 190Z\"/><path d=\"M300 190 C310 140 340 110 372 100 C356 136 344 170 340 190Z\"/></g><rect x=\"0\" y=\"210\" width=\"400\" height=\"270\" fill=\"url(#tb)\"/><path d=\"M0 210 L400 210\" stroke=\"#D6CEC3\" stroke-width=\"2\"/><g opacity=\".18\" fill=\"#6E6A55\"><path d=\"M40 210 L0 480 H110 L190 210Z\"/><path d=\"M210 210 L190 480 H300 L360 210Z\"/></g><ellipse cx=\"208\" cy=\"372\" rx=\"92\" ry=\"22\" fill=\"url(#sh)\"/><ellipse cx=\"200\" cy=\"336\" rx=\"86\" ry=\"54\" fill=\"#FBF9F5\"/><ellipse cx=\"200\" cy=\"336\" rx=\"86\" ry=\"54\" fill=\"none\" stroke=\"#E2DCD2\" stroke-width=\"2\"/><ellipse cx=\"200\" cy=\"318\" rx=\"50\" ry=\"32\" fill=\"#FFFFFF\"/><ellipse cx=\"200\" cy=\"318\" rx=\"50\" ry=\"32\" fill=\"none\" stroke=\"#E4DED5\" stroke-width=\"2\"/><ellipse cx=\"200\" cy=\"316\" rx=\"40\" ry=\"24\" fill=\"url(#cof)\"/><path d=\"M186 310 C192 302 206 302 212 310 C206 316 194 318 186 310Z\" fill=\"#E9CBA7\" opacity=\".9\"/><path d=\"M200 304 L200 320\" stroke=\"#E9CBA7\" stroke-width=\"2\" opacity=\".8\"/><path d=\"M249 312 C268 308 272 330 252 330\" fill=\"none\" stroke=\"#E4DED5\" stroke-width=\"6\" stroke-linecap=\"round\"/><g fill=\"#8FA58A\"><ellipse cx=\"320\" cy=\"250\" rx=\"14\" ry=\"26\" transform=\"rotate(-25 320 250)\"/><ellipse cx=\"340\" cy=\"244\" rx=\"12\" ry=\"24\" transform=\"rotate(20 340 244)\"/><rect x=\"316\" y=\"262\" width=\"34\" height=\"34\" rx=\"6\" fill=\"#D9CBB7\"/></g><rect width=\"400\" height=\"480\" filter=\"url(#n)\"/></svg>"];
   // ---------- 처음 디자인 ----------
   function seed() {
-    const D = { v: 10, rows: 1, name: "프로필 1안", contentH: 1900, styles: {}, els: [] };
+    // 프로필 3안: 레퍼런스 분석(앱 35곳 · 화면 58장) 규칙을 따라 2안을 다시 만든 것. 고른 방식은 D.an(오른쪽 ‘화면 전체’ 판에 보여요)
+    const D = { v: 10, rows: 1, name: "프로필 3안", contentH: 2600, styles: {}, els: [], an: { theme: "card", surf: "grey", qa: "bigSerif", act: "circlePill", hearts: "both", align: "왼쪽", margin: 20 } };
     const st = (kind, name) => { const id = "s_" + kind; D.styles[id] = { id, kind, name, props: {}, size: kind === "q" || kind === "a" || kind === "avatar" }; return id; };
     for (const k of ORDER) st(k, KINDS[k].label + " 기본");
+    const pre = (kind, id) => { const x = PRESETS[kind].find((y) => y.id === id); D.styles["s_" + kind].props = Object.assign({}, x.props, { pre: id }); };   // 처음 표현 방식(레퍼런스)
+    pre("photo", "hinge"); pre("info", "hinge"); pre("prompt", "hinge"); pre("chips", "cmb"); pre("badge", "glass"); pre("react", "hinge"); pre("friend", "willyou"); pre("topbar", "center");
+    Object.assign(D.styles.s_prompt.props, QAS[0].props, { tpB: 64 });   // 질문 14 · 답 26 명조(답이 1.86배: 레퍼런스 1.7~2배), 아래는 하트 자리
+    D.styles.s_status.props = { fill: "#FFFEFC", op: 96 };
     let n = 0;
     const add = (kind, o) => { const e = Object.assign({ id: "e" + (++n), kind, name: KINDS[kind].label, x: 0, y: 0, w: KINDS[kind].size[0], h: KINDS[kind].size[1], fixed: false, group: null, style: "s_" + kind, own: {}, text: KINDS[kind].text || "", hidden: false, locked: false, src: "" }, o); D.els.push(e); return e; };
-    // 아래 단계부터
-    add("bg", { name: "배경", fixed: true, h: H });
-    add("frame", { name: "대화 틀", x: 12, y: 106, w: 366, h: 1650 });
-    // 줄마다 위에서 아래로 놓아요. 정확한 세로 자리와 간격은 자동 배치가 여백(10 + 10)대로 맞춰요
-    let ry = 0; const row = () => (ry += 400);   // 줄끼리 겹치지 않게 넉넉히 띄워 두면 자동 배치가 붙여요
-    add("divider", { x: 22, w: 346, y: row() });
-    const ask = (t) => { const y = row(); const q = add("q", { x: 74, w: 270, y, text: t }); const av = add("avatar", { x: 22, y, w: 32, h: 32, name: "앱 얼굴" }); const g = uid("g"); q.group = g; av.group = g; return q; };
-    const ans = (t) => add("a", { x: 98, w: 270, y: row(), text: t });
-    ask("반가워요! 지원님은 어떤 사람이에요? 한 줄로 소개해 주세요.");
-    ans("주말엔 한강에서 자전거 타는 걸 좋아해요. 망원에서 출발해 여의도까지 달리고, 돌아오는 길에 편의점 라면 먹는 게 제 작은 행복이에요. 바람이 좋은 날엔 해 질 때까지 강가 잔디에 앉아 음악을 들으며 쉬기도 해요. 같이 달릴 사람이 생기면 좋겠어요.");
-    add("photo", { name: "사진 1", x: 108, y: row(), w: 260, h: 320 });
-    const info = add("info", { x: 74, y: row(), w: 294 }); const bd = add("badge", { x: 74, y: row(), w: 104, h: 28, name: "회사 확인 배지" }); const g2 = uid("g"); info.group = g2; bd.group = g2;
-    ask("어떤 사람을 좋아해요?");
-    const a2 = ans("잘 웃고, 이야기를 끝까지 들어 주는 사람이 좋아요. 제 얘기에 질문을 하나 더 건네 주는 사람이면 금방 편해지는 것 같아요. 작은 약속도 잘 지키고, 고마운 일엔 고맙다고 바로 말해 주는 사람이면 더 좋아요. 저도 그런 사람이 되려고 노력해요."); const hr = add("react", { x: 60, y: a2.y + 16, w: 34, h: 34, name: "반응 하트" }); const g3 = uid("g"); a2.group = g3; hr.group = g3;
-    ask("쉬는 날엔 주로 뭐 해요?");
-    ans("동네 빵집을 돌아다녀요. 요즘은 소금빵에 빠져서 마포에서 맛있다는 곳은 거의 다 가 봤어요. 갓 나온 빵 냄새가 나는 아침 시간을 제일 좋아하고, 마음에 드는 곳은 지도에 별표를 쳐 둬요. 좋은 곳 알면 꼭 알려 주세요! 다음엔 같이 가 봐도 좋겠어요.");
-    add("photo", { name: "사진 2", x: 148, y: row(), w: 220, h: 260 });
-    add("friend", { x: 74, y: row(), w: 294 });
-    ask("처음 만나면 뭐 하고 싶어요?");
-    ans("조용한 카페에서 이야기를 많이 나누고 싶어요. 서로 좋아하는 빵이나 자주 가는 동네 얘기를 하다 보면 시간이 금방 갈 것 같아요. 날씨가 좋으면 근처 공원을 천천히 걸어도 좋고요. 처음이라 어색해도 편하게 웃으면서 이야기할 수 있으면 좋겠어요.");
-    add("chips", { x: 22, y: row(), w: 346 });
-    ask("지원님에게 첫마디를 건네 볼까요?");
-    add("typing", { name: "입력 중", x: 74, y: row(), w: 64, h: 40 });
-    // 화면에 붙은 것(위 단계)
-    const pan = add("frame", { name: "아래 버튼 판", fixed: true, x: 0, y: H - 122, w: W, h: 122, style: null, own: { fill: "#FFFFFF", op: 92, radius: 0, blur: 14, bw: 0, bc: "#E9E2E0", dp: "바깥(떠 보이게)", dpB: 20, dpY: 7, dpO: 8, dpC: "#000000" } });
-    const b1 = add("btn", { name: "첫마디 보내기", fixed: true, x: 16, y: H - 108, w: 270, h: 54 });
-    const b2 = add("btn", { name: "다음에", fixed: true, x: 294, y: H - 108, w: 80, h: 54, text: "다음에", style: null, own: { fill: "#F2F2F7", color: "#1C1C1E", size: 16, weight: "600", radius: 16, bw: 0, bc: "#E5E5EA", sh: 0 } });
-    const nt = add("text", { name: "알림 글", fixed: true, x: 0, y: H - 44, w: W, text: "돈을 내기 전에 먼저 이야기해요", own: {}, style: "s_text" });
-    D.styles.s_text.props = { color: "#8E8E93", size: 12.5, talign: "가운데" };
-    for (const e of [b1, b2, nt]) Object.assign(e, { link: pan.id, lx: e.x - pan.x, ly: e.y - pan.y });   // 판 안의 칸은 판에 연계
-    const tb = add("topbar", { name: "상단 바", fixed: true, x: 0, y: 47, w: W, h: 52 });
+    // 아래 단계부터. 바탕은 아주 옅은 회색 #F6F6F6, 카드는 따뜻한 흰색 #FFFEFC(Hinge 프로필 화면에서 잰 색)
+    add("bg", { name: "배경", fixed: true, h: H, style: null, own: Object.assign({}, KINDS.bg.props, { fill: "#F6F6F6", fill2: "#F6F6F6", grad: false }) });
+    add("frame", { name: "대화 틀", x: 0, y: 106, w: W, h: 2400, style: null, own: Object.assign({}, KINDS.frame.props, { fill: "#F6F6F6", op: 0, radius: 0, pt: 10, pb: 28 }), m: { mt: 0, mb: 8, ml: 0, mr: 0 } });
+    // 프로필은 위에서 아래로 한 줄에 하나씩: 사진(이름) → 기본 정보 → 질문 카드와 사진 번갈아
+    let ry = 0; const row = () => (ry += 700);
+    const full = (kind, o) => add(kind, Object.assign({ x: 20, w: 350, y: row(), szw: "fill", m: { mt: 6, mb: 6, ml: 20, mr: 20 } }, o));   // 양옆 20(레퍼런스: 화면 폭의 4.9~6.4%), 칸 사이 12
+    const photo = (name, src, o) => { const ph = full("photo", Object.assign({ name, h: 442, src }, o || {})); const r = add("react", { name: "반응 하트", x: ph.x + 350 - 58, y: ph.y + 442 - 58, w: 44, h: 44 }); Object.assign(r, { link: ph.id, lx: 350 - 58, ly: 442 - 58 }); return ph; };   // 사진마다 오른쪽 아래 하트
+    const card = (q, a) => { const c = full("prompt", { text: q + "\n" + a }); const r = add("react", { name: "반응 하트(질문)", x: c.x + 350 - 58, y: c.y, w: 44, h: 44 }); Object.assign(r, { link: c.id, lx: 350 - 58, ly: 0, m: { mt: 0, mb: 14, ml: 0, mr: 14 }, b: { k: c.id + "|0", h: "r", v: "b", ox: 0, oy: 0 } }); return c; };   // 질문 카드도 오른쪽 아래 하트(Hinge)
+    const SAMPLE = SAMPLE_PHOTOS.map((x) => "data:image/svg+xml," + encodeURIComponent(x));   // 예시 사진(우리가 그린 그림): 한강 노을과 자전거 · 소금빵 · 창가 커피
+    photo("사진 1", SAMPLE[0], { text: "지원, 28\n✓ 회사 확인", style: null, own: Object.assign({}, D.styles.s_photo.props, PRESETS.photo.find((x) => x.id === "bumble").props, { pre: "bumble" }) });   // 첫 사진: 왼쪽 아래 이름, 바로 아래 인증(Bumble ‘ID verified’처럼 이름 곁에)
+    full("info", { name: "기본 정보", text: "28세|164cm|INTJ\n디자이너\n서울 마포\n비흡연" });
+    card("주말엔 보통", "한강에서 자전거 타요. 돌아오는 길 편의점 라면이 제일 맛있어요.");
+    photo("사진 2", SAMPLE[1]);
+    card("이런 사람에게 끌려요", "이야기를 끝까지 들어 주는 사람.");
+    full("chips", { name: "나와 겹치는 것", text: "나와 겹치는 3가지\n자전거, 빵집, 전시" });
+    photo("사진 3", SAMPLE[2]);
+    card("요즘 빠져 있는 것", "동네 빵집 돌기. 소금빵은 마포에서 거의 다 먹어 봤어요.");
+    full("friend", { text: "소개해 준 친구 민지\n약속 시간에 한 번도 늦은 적 없는 친구예요. 같이 있으면 편해요." });
+    card("첫 만남에 하고 싶은 것", "조용한 카페에서 오래 이야기하기.");
+    // 화면에 붙은 것(위 단계): 아래 버튼 판(동그라미 X + 첫마디 보내기), 상단 바, 상태 표시줄
+    const pan = add("frame", { name: "아래 버튼 판", role: "pan", fixed: true, x: 0, y: H - 100, w: W, h: 100, style: null, own: Object.assign({}, KINDS.frame.props, { fill: "#FFFEFC", op: 96, radius: 0, blur: 14, bw: 0, dp: "바깥(떠 보이게)", dpB: 16, dpY: -2, dpO: 6, dpC: "#000000" }) });
+    // 아래 버튼: 넘기기(왼쪽·작게·연하게) + 주 버튼(오른쪽·넓게·진하게). 가장자리라 높이 64(약 12mm, Hoober 2017)
+    const b2 = add("btn", { name: "다음에", role: "sec", fixed: true, x: 20, y: H - 88, w: 64, h: 64, text: "✕", style: null, own: Object.assign({}, KINDS.btn.props, { fill: "#EFEFF0", op: 100, color: "#1C1C1E", size: 20, weight: "500", radius: 32, bw: 0, talign: "가운데" }), m: { mt: 12, mb: 0, ml: 20, mr: 0 } });
+    const b1 = add("btn", { name: "첫마디 보내기", role: "pri", text0: "첫마디 보내기", fixed: true, x: 94, y: H - 88, w: 276, h: 64, szw: "fill", style: null, own: Object.assign({}, KINDS.btn.props, { fill: "#FF4A51", op: 100, color: "#FFFFFF", size: 19, weight: "700", radius: 32, bw: 0, talign: "가운데" }), m: { mt: 12, mb: 0, ml: 10, mr: 20 } });   // 글자 19 굵게 = 큰 글자(흰 글자와 #FF4A51 대비 3.3:1, WCAG 큰 글자 3:1)
+    for (const e of [b1, b2]) Object.assign(e, { link: pan.id, lx: e.x - pan.x, ly: e.y - pan.y });   // 판 안의 칸은 판에 연계
+    b2.b = { k: pan.id + "|1", h: "l", v: "t", ox: 0, oy: 0 }; b1.b = { k: pan.id + "|1", h: "r", v: "t", ox: 0, oy: 0 };
+    const tb = add("topbar", { name: "상단 바", fixed: true, x: 0, y: 47, w: W, h: 52, text: "지원" });
     for (const [name, text, x, size, weight] of [["뒤로 버튼", "‹", 0, 28, "300"], ["더보기 버튼", "⋯", W - 44, 20, "400"]])   // 바 안의 아이콘 버튼(바탕 없이 글자만)
       Object.assign(add("btn", { name, fixed: true, x, y: tb.y, w: 44, h: tb.h, text, style: null, own: Object.assign({}, KINDS.btn.props, { fill: "#FFFFFF", op: 0, color: "#1C1C1E", size, weight, radius: 0, bw: 0, sh: 0 }) }), { link: tb.id, lx: x - tb.x, ly: 0 });
-    const bdg = add("badge", { name: "상단 확인 배지", fixed: true, x: 236, y: 59, w: 62, h: 26, text: "✓ 확인", style: null, own: { fill: "#E7F3FF", color: "#1D6FD8", size: 12, weight: "600", radius: 999 } });
-    Object.assign(bdg, { link: tb.id, lx: bdg.x - tb.x, ly: bdg.y - tb.y });   // 바 안의 배지는 바에 연계
     add("status", { name: "상태 표시줄", fixed: true, x: 0, y: 0, w: W, h: 47 });
     return D;
   }
@@ -586,7 +719,7 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
   function corners(p) { const ln = cLinks(p), r = +p.radius || 0; return CORN.map((c) => (ln.includes(c) || p[CK[c]] == null ? r : +p[CK[c]])); }
   function radCSS(p, unit = "px", tail) { const c = corners(p); if (tail != null && p.tail) c[tail] = Math.min(6, c[tail]); return `border-radius:${c.map((v) => v + unit).join(" ")};`; }
   // 바탕 색: 그라데이션을 켜면 두 색으로
-  function fillCSS(p, key = "fill", op) { const a = hexA(p[key], op); return p.grad ? `linear-gradient(${p.angle ?? 180}deg, ${a}, ${hexA(p.fill2 || p[key], op)})` : a; }
+  function fillCSS(p, key = "fill", op = p.op) { const a = hexA(p[key], op); return p.grad ? `linear-gradient(${p.angle ?? 180}deg, ${a}, ${hexA(p.fill2 || p[key], op)})` : a; }
   // 글자 색: 그라데이션을 켜면 글자에 두 색
   function inkCSS(p) { return p.grad ? `background:linear-gradient(${p.angle ?? 90}deg, ${p.color}, ${p.fill2 || p.color});-webkit-background-clip:text;background-clip:text;color:transparent;` : `color:${p.color};`; }
   function face(p) {
@@ -608,7 +741,9 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
       case "photo": {
         const im = e.src ? `<img src="${esc(e.src)}" alt="" style="width:100%;height:100%;object-fit:${p.fit};display:block">` : `<div style="width:100%;height:100%;display:grid;place-items:center;background:linear-gradient(160deg, ${p.ph1}, ${p.ph2});color:rgba(0,0,0,.35);font-size:13px">사진</div>`;
         const ov = p.grad ? `<div style="position:absolute;inset:0;background:linear-gradient(${p.angle}deg, ${hexA(p.fill, p.gop1)}, ${hexA(p.fill2, p.gop2)})"></div>` : "";
-        return `<div style="position:relative;width:100%;height:100%;${radCSS(p)}overflow:hidden;box-shadow:var(--dps, 0 0 0 0 transparent)${p.bw ? `, 0 0 0 ${p.bw}px ${p.bc}` : ""};">${im}${ov}</div>`;
+        const [c1, ...c2] = String(e.text || "").split("\n"), c2t = c2.join("\n").trim();
+        const cap = c1.trim() || c2t ? `<div data-ed="all" style="position:absolute;left:18px;right:18px;${p.cap === "위 왼쪽" ? "top:18px" : "bottom:18px"};text-align:${p.cap === "아래 가운데" ? "center" : "left"};color:${p.capColor};text-shadow:0 1px 8px rgba(0,0,0,.35);white-space:pre-wrap;word-break:keep-all"><div style="font-size:${p.capSize}px;font-weight:700;line-height:1.2">${esc(c1)}</div>${c2t ? `<div style="font-size:14px;font-weight:500;line-height:1.4;margin-top:4px;opacity:.92">${esc(c2t)}</div>` : ""}</div>` : "";   // 사진 위 글: 첫 줄 크게(이름·나이), 다음 줄 작게
+        return `<div style="position:relative;width:100%;height:100%;${radCSS(p)}overflow:hidden;box-shadow:var(--dps, 0 0 0 0 transparent)${p.bw ? `, 0 0 0 ${p.bw}px ${p.bc}` : ""};">${im}${ov}${cap}</div>`;
       }
       case "btn": return `<div data-ed="all" style="width:100%;height:100%;display:grid;align-items:center;justify-items:${JI(p)};${tpCSS(p)}background:${fillCSS(p, "fill", p.op)};color:${p.color};font-size:${p.size}px;font-weight:${p.weight};${radCSS(p)}${p.bw ? `border:${p.bw}px solid ${p.bc};` : ""}">${t}</div>`;
       case "topbar": {   // [비움][제목 / 작은 글][비움]. 양옆 아이콘은 바 안에 넣은 버튼 칸
@@ -620,20 +755,27 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
         const rs = infoRows(e), cwv = (i) => (e.cw && e.cw[i] > 0 ? e.cw[i] : 1); let k0 = 0;
         if (p.look === "칸") return `<div style="display:flex;flex-direction:column;box-shadow:var(--dps, 0 0 0 0 transparent);background:${fillCSS(p)};${radCSS(p)}${p.bw ? `border:${p.bw}px solid ${p.bc};` : ""}color:${p.color};font-size:${p.size}px;font-weight:${p.weight};overflow:hidden">${rs.map((r, ri) => {
           const n = r.length, cols = p.cols === "글에 맞춰" ? `repeat(${n},auto)` : p.cols === "직접 정하기" ? r.map((_, i) => `minmax(0,${cwv(k0 + i)}fr)`).join(" ") : `repeat(${n},minmax(0,1fr))`; k0 += n;
-          return `<div style="display:grid;grid-template-columns:${cols};flex:1 1 auto;${ri ? `border-top:1px solid ${p.bc};` : ""}">${r.map((x, i) => `<span data-ed="r${ri}c${i}" style="${tpCSS(p)}text-align:${TA(p, "center")};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;${i ? `border-left:1px solid ${p.bc};` : ""}">${esc(x) || "&nbsp;"}</span>`).join("")}</div>`; }).join("")}</div>`;
+          return `<div style="display:grid;grid-template-columns:${cols};flex:1 1 auto;${ri ? `border-top:1px solid ${p.bc};` : ""}">${r.map((x, i) => (p.icons ? `<span style="${tpCSS(p)}display:flex;align-items:center;gap:10px;justify-content:${({ left: "flex-start", center: "center", right: "flex-end" })[TA(p, "center")]};white-space:nowrap;overflow:hidden;${i ? `border-left:1px solid ${p.bc};` : ""}">${x ? iconSVG(x, p.color) : ""}<span data-ed="r${ri}c${i}" style="min-width:0;overflow:hidden;text-overflow:ellipsis">${esc(x) || "&nbsp;"}</span></span>` : `<span data-ed="r${ri}c${i}" style="${tpCSS(p)}text-align:${TA(p, "center")};white-space:nowrap;overflow:hidden;text-overflow:ellipsis;${i ? `border-left:1px solid ${p.bc};` : ""}">${esc(x) || "&nbsp;"}</span>`)).join("")}</div>`; }).join("")}</div>`;
+        const bdr = p.bw ? `border:${p.bw}px solid ${p.bc};` : "";
+        if (p.look === "칩") return `<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:${({ left: "flex-start", center: "center", right: "flex-end" })[TA(p, "center")]};color:${p.color};font-size:${p.size}px;font-weight:${p.weight}">${rs.map((r, ri) => r.map((x, i) => (x ? `<span style="${tpCSS(p)}background:${fillCSS(p)};${radCSS(p)}${bdr}box-shadow:var(--dps, 0 0 0 0 transparent);white-space:nowrap;display:inline-flex;align-items:center;gap:6px">${p.icons ? iconSVG(x, p.color) : ""}<span data-ed="r${ri}c${i}">${esc(x)}</span></span>` : "")).join("")).join("")}</div>`;   // 칸마다 알약(빈 칸은 안 보여요)
+        if (p.look === "목록") { let k = 0; return `<div style="background:${fillCSS(p)};${radCSS(p)}${bdr}box-shadow:var(--dps, 0 0 0 0 transparent);overflow:hidden;color:${p.color};font-size:${p.size}px;font-weight:${p.weight}">${rs.map((r, ri) => r.map((x, i) => (x ? `<div style="${tpCSS(p)}display:flex;align-items:center;gap:12px;justify-content:${({ left: "flex-start", center: "center", right: "flex-end" })[TA(p, "center")]};${k++ ? `border-top:1px solid ${p.bc};` : ""}">${p.icons ? iconSVG(x, p.color) : ""}<span data-ed="r${ri}c${i}">${esc(x)}</span></div>` : "")).join("")).join("")}</div>`; }   // 한 줄에 하나
         return `<div style="${tpCSS(p)}text-align:${TA(p, "center")};box-shadow:var(--dps, 0 0 0 0 transparent);background:${fillCSS(p)};${radCSS(p)}${p.bw ? `border:${p.bw}px solid ${p.bc};` : ""}color:${p.color};font-size:${p.size}px;font-weight:${p.weight}">${rs.map((r, ri) => r.map((x, i) => `<span data-ed="r${ri}c${i}">${esc(x) || "&nbsp;"}</span>`).join(" · ")).join("<br>")}</div>`;
       }
       case "chips": {
         const [title, ...rest] = String(e.text).split("\n"); const items = rest.join(",").split(",").map((x) => x.trim()).filter(Boolean);
-        return `<div style="text-align:${TA(p, "center")}"><div data-ed="l0" style="color:${p.title};font-size:${p.size - 1}px;margin-bottom:6px">${esc(title)}</div><div class="chips" style="justify-content:${({ left: "flex-start", center: "center", right: "flex-end" })[TA(p, "center")]}">${items.map((x, i) => `<span data-ed="c${i}" style="background:${fillCSS(p)};color:${p.color};font-size:${p.size}px;font-weight:${p.weight};${tpCSS(p)}${radCSS(p)}">${esc(x)}</span>`).join("")}</div></div>`;
+        return `<div style="text-align:${TA(p, "center")};${p.box ? `background:${p.boxFill};border-radius:${p.boxRadius}px;padding:20px 20px 22px;${+p.boxBw ? `border:${p.boxBw}px solid ${p.boxBc || "#E5E5EA"};` : ""}` : ""}"><div data-ed="l0" style="color:${p.title};${p.box ? "font-size:15px;font-weight:600;margin-bottom:12px" : `font-size:${p.size - 1}px;margin-bottom:6px`}">${esc(title)}</div><div class="chips" style="justify-content:${({ left: "flex-start", center: "center", right: "flex-end" })[TA(p, "center")]}">${items.map((x, i) => `<span data-ed="c${i}" style="background:${fillCSS(p)};color:${p.color};font-size:${p.size}px;font-weight:${p.weight};${tpCSS(p)}${radCSS(p)}${p.bw ? `border:${p.bw}px solid ${p.bc};` : ""}">${p.hash ? "#" : ""}${esc(x)}</span>`).join("")}</div></div>`;
       }
       case "badge": return `<div data-ed="all" style="width:100%;height:100%;display:grid;align-items:center;justify-items:${JI(p)};${tpCSS(p)}background:${fillCSS(p)};color:${p.color};font-size:${p.size}px;font-weight:${p.weight};${radCSS(p)}white-space:nowrap">${t}</div>`;
       case "friend": { const [ti, ...bo] = String(e.text).split("\n"); return `<div style="background:${fillCSS(p)};${radCSS(p)}${p.bw ? `border:${p.bw}px solid ${p.bc};` : ""}${tpCSS(p)}font-size:${p.size}px;font-weight:${p.weight};color:${p.color};line-height:1.5;text-align:${TA(p)}"><div data-ed="l0" style="color:${p.title};font-weight:700;font-size:${p.size - 1.5}px;margin-bottom:3px">${esc(ti)}</div><span data-ed="rest">${esc(bo.join("\n")).replace(/\n/g, "<br>")}</span></div>`; }
       case "divider": { const ta = TA(p, "center"), side = (on) => (on ? (p.line ? `<i style="flex:1;height:1px;background:${p.color};opacity:.35"></i>` : `<i style="flex:1"></i>`) : "");   // 맞추기: 왼쪽이면 글이 왼쪽 끝(줄은 오른쪽만)
         return `<div style="display:flex;align-items:center;gap:10px;color:${p.color};font-size:${p.size}px;font-weight:${p.weight};${tpCSS(p)}">${side(ta !== "left")}<span data-ed="all" style="${inkCSS(p)}">${t}</span>${side(ta !== "right")}</div>`; }
       case "typing": return `<div class="typing" style="background:${fillCSS(p)};${radCSS(p)}"><i style="background:${p.dot}"></i><i style="background:${p.dot};opacity:.7"></i><i style="background:${p.dot};opacity:.45"></i></div>`;
-      case "react": return `<div style="width:100%;height:100%;display:grid;place-items:center;background:${fillCSS(p)};${radCSS(p, "%")}box-shadow:inset 0 0 0 1.5px ${p.bc}, 0 2px 6px rgba(0,0,0,.08)"><svg viewBox="0 0 24 24" width="56%" height="56%"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" fill="${p.color}"/></svg></div>`;
+      case "react": return `<div style="width:100%;height:100%;display:grid;place-items:center;background:${fillCSS(p)};${radCSS(p, "%")}box-shadow:inset 0 0 0 1.5px ${p.bc}, 0 2px 6px rgba(0,0,0,.08)"><svg viewBox="0 0 24 24" width="${p.outline ? 50 : 56}%" height="${p.outline ? 50 : 56}%"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z" ${p.outline ? `fill="none" stroke="${p.color}" stroke-width="1.7" stroke-linejoin="round"` : `fill="${p.color}"`}/></svg></div>`;
       case "composer": return `<div style="width:100%;height:100%;display:flex;align-items:center;gap:8px;${tpCSS(p)}background:${fillCSS(p)};${radCSS(p)}color:${p.color};font-size:15px;font-weight:${p.weight}"><span data-ed="all" style="flex:1;text-align:${TA(p)}">${t}</span><span style="width:36px;height:36px;border-radius:50%;background:${p.send};display:grid;place-items:center;color:#fff;font-size:18px">↑</span></div>`;
+      case "prompt": {   // 질문 카드: 첫 줄 질문(작게), 다음 줄부터 답(크게, 명조 또는 고딕)
+        const [qq, ...an] = String(e.text).split("\n"), SERIF = `'Noto Serif KR', 'AppleMyungjo', 'Batang', serif`;
+        return `<div style="background:${fillCSS(p)};${radCSS(p)}${p.bw ? `border:${p.bw}px solid ${p.bc};` : ""}${tpCSS(p)}text-align:${TA(p)}">${p.quote ? `<div aria-hidden="true" style="font:700 ${Math.round(p.size * 1.7)}px/0.8 ${SERIF};color:${p.qColor};height:${Math.round(p.size * 0.9)}px;margin-bottom:6px">“</div>` : ""}<div data-ed="l0" style="color:${p.qColor};font-size:${p.qSize}px;font-weight:${p.qWeight};line-height:1.4;margin-bottom:${+p.gap || 0}px">${esc(qq)}</div><div data-ed="rest" style="${inkCSS(p)}font-size:${p.size}px;font-weight:${p.weight};line-height:${p.lineH};${p.aFont === "명조" ? `font-family:${SERIF};` : ""}white-space:pre-wrap;word-break:keep-all">${esc(an.join("\n"))}</div></div>`;
+      }
       case "text": return `<div data-ed="all" style="${inkCSS(p)}font-size:${p.size}px;font-weight:${p.weight};line-height:${p.lineH};text-align:${TA(p, "center")};${tpCSS(p)}white-space:pre-wrap">${t}</div>`;
     }
     return "";
@@ -650,7 +792,7 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
     const byH = narrow ? (window.innerHeight * 0.45 - 22) / H : (Math.min(window.innerHeight - bh - 130, 880) - 22) / H;
     scale = Math.max(narrow ? 0.3 : 0.42, Math.min(1, byH, (wAvail - 22) / W));
     $("#screen").style.width = px(W * scale); $("#screen").style.height = px(H * scale);
-    stage.style.transform = `scale(${scale})`;
+    stage.style.transform = `scale(${scale})`; stage.style.setProperty("--sc", scale);
   }
   function maxScroll() { return Math.max(0, (D.contentH || H) - H); }
   function paintStage() {
@@ -769,8 +911,9 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
   const H_ = (e) => (KINDS[e.kind].auto ? (e._h || e.h) : e.kind === "bg" && !e.fixed && P(e).full ? Math.max(e.h, (D.contentH || H) - e.y) : e.h);
   function members(e) { return e.group ? D.els.filter((x) => x.group === e.group) : [e]; }
   function drawSel() {
-    for (const b of $$(".sel-box, .guide, .gap, .gchip", stage)) b.remove();
+    for (const b of $$(".sel-box, .guide, .gap, .gchip, .an-ov, .an-mm, .an-n", stage)) b.remove();
     if (drag && drag.gl) stage.insertAdjacentHTML("beforeend", drag.gl);
+    if (anOv.order || anOv.touch) stage.insertAdjacentHTML("beforeend", anOverlay());
     if (preview) return;
     const boxes = [];
     const groups = new Set();
@@ -854,10 +997,228 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
     if (type === "n") return `<div class="row"><span>${label}</span><div class="num"><input type="range" data-k="${key}" min="${a}" max="${b}" step="${step || 1}" value="${val}" aria-label="${label}"><input type="number" id="${id}" data-k="${key}" min="${a}" max="${b}" step="${step || 1}" value="${val}" aria-label="${label} 숫자"></div></div>`;
     return "";
   }
+  // ---------- 화면 전체(분석 규칙): 아무 칸도 고르지 않았을 때 오른쪽 판 ----------
+  // 고른 값은 디자인에 남겨요(D.an). 휴대폰도 같은 디자인을 받으니 같은 모양이에요
+  const anOv = { order: false, touch: false };   // 화면 위에 겹쳐 보기(편집할 때만): 읽는 순서 · 누르기 쉬운 곳
+  const hex6 = (h) => { h = String(h || "#000000").replace("#", ""); if (h.length === 3) h = h.split("").map((c) => c + c).join(""); return /^[0-9a-f]{6}$/i.test(h) ? h : "000000"; };
+  const lumOf = (h) => { const n = parseInt(hex6(h), 16), f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f((n >> 16) & 255) + 0.7152 * f((n >> 8) & 255) + 0.0722 * f(n & 255); };   // WCAG 상대 휘도
+  const ratioOf = (a, b) => { const x = lumOf(a), y = lumOf(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };   // WCAG 명암비
+  const spreadOf = (h) => { const n = parseInt(hex6(h), 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255; return Math.max(r, g, b) - Math.min(r, g, b); };   // 0이면 무채색(흰·회색)
+  const nearHex = (a, b) => { const x = parseInt(hex6(a), 16), y = parseInt(hex6(b), 16); return [16, 8, 0].every((s) => Math.abs(((x >> s) & 255) - ((y >> s) & 255)) < 8); };   // 눈으로 거의 같은 색
+  const mixHex = (a, b, t) => { const A = parseInt(hex6(a), 16), B = parseInt(hex6(b), 16), c = (s) => Math.round(((A >> s) & 255) * (1 - t) + ((B >> s) & 255) * t); return "#" + [16, 8, 0].map((s) => c(s).toString(16).padStart(2, "0")).join("").toUpperCase(); };
+  const fixInk = (fg, bg, need) => { const to = lumOf(bg) > 0.4 ? "#000000" : "#FFFFFF"; for (let t = 0.05; t <= 1.001; t += 0.05) { const c = mixHex(fg, to, t); if (ratioOf(c, bg) >= need) return c; } return to; };   // 같은 색 느낌을 두고 대비만 맞춰요
+  const pageBg = () => { const b = D.els.find((e) => e.kind === "bg" && !e.hidden); return b ? P(b).fill : "#FFFFFF"; };
+  function behind(e) {   // 글 뒤에 깔린 색: 칸 색이 반쯤 이상 보이면 칸 색, 아니면 부모 칸 색, 아니면 배경
+    for (let t = e, n = 0; t && n < 6; t = linkOf(t), n++) { const p = P(t), key = t.kind === "chips" ? "boxFill" : "fill"; if (t.kind === "chips" ? p.box : (p.op ?? 100) >= 50 && p[key] && t.kind !== "photo" && t.kind !== "react") return p[key]; }
+    return pageBg();
+  }
+  function mkEl(kind, o) {   // 새 칸(같은 종류 연동이 있으면 연동)
+    const k = KINDS[kind], sid = "style" in o ? o.style : Object.values(D.styles).find((s) => s.kind === kind)?.id || null;
+    const e = Object.assign({ id: uid("e"), kind, name: k.label, x: 0, y: 0, w: k.size[0], h: k.size[1], fixed: false, group: null, style: sid, own: sid ? {} : Object.assign({}, k.props), text: k.text || "", hidden: false, locked: false, src: "" }, o);
+    D.els.push(e); return e;
+  }
+  function putIn(e, par, o) {   // 부모 칸 안 자리: 붙일 쪽(bh 왼쪽 l·가운데 c·오른쪽 r / bv 위 t·가운데 c·아래 b) + 여백 + 가운데에서 비킨 거리
+    e.link = par.id; e.fixed = par.fixed; e.hidden = false; delete e.group;
+    if (o.w != null) e.w = o.w; if (o.h != null) e.h = o.h;
+    if (o.szw) e.szw = o.szw; else delete e.szw; delete e.szh;
+    e.m = Object.assign({ mt: 0, mb: 0, ml: 0, mr: 0 }, o.m || {});
+    e.b = { k: `${par.id}|${par.fixed ? 1 : 0}`, h: o.bh || "l", v: o.bv || "t", ox: o.ox || 0, oy: o.oy || 0 };
+  }
+  function actEls() {   // 아래 버튼 판과 두 버튼(주 버튼 · 넘기기). 이름표(role)가 없으면 자리·글로 찾아요
+    const low = D.els.filter((e) => e.kind === "btn" && e.fixed && linkOf(e)?.kind !== "topbar" && e.y + e.h / 2 > H * 0.6);
+    const pri = D.els.find((e) => e.role === "pri") || low.filter((e) => !/^[✕×]$/.test(e.text) && !/다음/.test(e.text + e.name)).sort((a, b) => b.w * b.h - a.w * a.h)[0] || null;
+    const sec = D.els.find((e) => e.role === "sec") || low.find((e) => e !== pri && (/^[✕×]$/.test(e.text) || /다음/.test(e.text + e.name))) || null;
+    const pan = D.els.find((e) => e.role === "pan") || (pri && linkOf(pri)?.kind === "frame" ? linkOf(pri) : null) || D.els.find((e) => e.kind === "frame" && e.fixed && e.y > H * 0.6) || null;
+    return { pri, sec, pan };
+  }
+  const setAll = (e, o) => { for (const [k, v] of Object.entries(o)) setProp(e, k, v); };
+  const anSurf = () => SURF.find((x) => x.id === (D.an && D.an.surf)) || SURF[0];
+  function usePreset(kind, id, onlyStyled) {   // 표현 방식(레퍼런스)을 그 종류 모든 칸에(연동 칸은 한 번에)
+    const pr = (PRESETS[kind] || []).find((x) => x.id === id); if (!pr) return;
+    for (const e of D.els.filter((x) => x.kind === kind && !linkOf(x))) {
+      if (onlyStyled && !e.style) { for (const k of ["radius", "bw", "bc", "dp"]) if (k in pr.props) setProp(e, k, pr.props[k]); }   // 이름을 얹은 첫 사진: 모서리·테두리만
+      else if (kind === "photo" && !String(e.text || "").trim()) { const o = Object.assign({}, pr.props, { grad: false }); for (const k of ["fill", "gop1", "fill2", "gop2", "angle", "cap", "capSize", "capColor"]) delete o[k]; setAll(e, o); setProp(e, "pre", pr.id); }   // 글을 얹지 않은 사진: 어둡게 덮는 그라데이션은 빼요
+      else { setAll(e, pr.props); setProp(e, "pre", pr.id); }
+      if (pr.m != null && inFlow(e)) e.m = Object.assign({}, e.m || {}, { ml: pr.m, mr: pr.m });
+    }
+  }
+  function applySurf(id) {
+    const s = SURF.find((x) => x.id === id); if (!s) return;
+    const { pan } = actEls();
+    for (const e of D.els) {
+      const p = P(e);
+      if (e.kind === "bg") setAll(e, { fill: s.bg, fill2: s.bg, grad: false });
+      else if (e === mainFrame()) setProp(e, "fill", s.bg);
+      else if (e.kind === "prompt") { setAll(e, s.card); TP.forEach((k, i) => setProp(e, k, s.pad[i])); }
+      else if (e.kind === "info") { if (p.look === "칸" || p.look === "목록") setAll(e, s.card); }
+      else if (e.kind === "chips") setAll(e, { box: s.card.op > 0, boxFill: s.card.fill || s.bg, boxBw: s.card.bw || 0, boxBc: s.card.bc || "#E5E5EA", dp: s.card.dp, dpB: s.card.dpB ?? p.dpB, dpY: s.card.dpY ?? p.dpY, dpO: s.card.dpO ?? p.dpO });
+      else if (e.kind === "friend") { const tinted = spreadOf(p.fill) >= 8 || lumOf(p.fill) < 0.75; setAll(e, Object.assign({}, s.card, tinted || !s.card.op ? { fill: p.fill, op: 100 } : {})); }   // 남이 한 말은 색 칸이면 색 그대로
+      else if (e.kind === "topbar" || e.kind === "status") setProp(e, "fill", s.bar);
+      else if (e === pan && !(D.an && D.an.act === "fab")) setProp(e, "fill", s.bar);
+    }
+    heartPad();
+  }
+  function heartPad() {   // 질문 카드에 하트가 있으면 아래 글 여백을 하트 자리만큼
+    const pad = anSurf().pad;
+    for (const pr of D.els.filter((e) => e.kind === "prompt")) {
+      const has = D.els.some((r) => r.kind === "react" && !r.hidden && linkOf(r) === pr), b = +P(pr).tpB || 0;
+      if (has && b < 64) setProp(pr, "tpB", 64); else if (!has && b === 64) setProp(pr, "tpB", pad[2]);
+    }
+  }
+  function applyQA(id) { const q = QAS.find((x) => x.id === id); if (!q) return; for (const e of D.els.filter((x) => x.kind === "prompt")) setAll(e, q.props); }
+  function applyAct(id) {
+    if (!ACTS.some((x) => x.id === id)) return;
+    let { pri, sec, pan } = actEls(); const mg = (D.an && +D.an.margin) || 20, s = anSurf();
+    if (!pan) pan = mkEl("frame", { name: "아래 버튼 판", fixed: true, x: 0, y: H - 100, w: W, h: 100, style: null, own: Object.assign({}, KINDS.frame.props, { fill: s.bar, op: 96, radius: 0, blur: 14, bw: 0, dp: "바깥(떠 보이게)", dpB: 16, dpY: -2, dpO: 6, dpC: "#000000" }) });
+    if (!pri) pri = mkEl("btn", { name: "첫마디 보내기", fixed: true, text: "첫마디 보내기", style: null, own: Object.assign({}, KINDS.btn.props) });
+    if (!sec) sec = mkEl("btn", { name: "다음에", fixed: true, text: "✕", style: null, own: Object.assign({}, KINDS.btn.props) });
+    pan.role = "pan"; pri.role = "pri"; sec.role = "sec";
+    if (pri.text0 == null) pri.text0 = /^[♥♡]$/.test(pri.text) ? "첫마디 보내기" : pri.text;   // 글 버튼으로 돌아올 때 쓸 글
+    pan.hidden = false; Object.assign(pan, { x: 0, w: W, h: 100, y: H - 100 }); pan.b = { k: "|1", h: "c", v: "b", ox: 0, oy: 0 }; delete pan.szw; pan.m = { mt: 0, mb: 0, ml: 0, mr: 0 };
+    if (id === "fab") { if (!pan.panOwn) pan.panOwn = { op: P(pan).op, blur: P(pan).blur, dp: P(pan).dp }; setAll(pan, { op: 0, blur: 0, dp: "없음" }); }
+    else if (pan.panOwn) { setAll(pan, pan.panOwn); delete pan.panOwn; }
+    const RED = { fill: "#FF4A51", op: 100, color: "#FFFFFF", weight: "700", bw: 0, talign: "가운데", tpL: 0, tpR: 0, tpT: 0, tpB: 0 };
+    const LIGHT = { fill: "#EFEFF0", op: 100, color: "#1C1C1E", weight: "500", bw: 0, talign: "가운데", tpL: 0, tpR: 0, tpT: 0, tpB: 0, dp: "없음" };
+    sec.hidden = false;
+    if (id === "circlePill") {
+      putIn(sec, pan, { w: 64, h: 64, bh: "l", m: { ml: mg, mt: 12 } }); sec.text = "✕"; setAll(sec, Object.assign({}, LIGHT, { size: 20, radius: 32 }));
+      putIn(pri, pan, { h: 64, szw: "fill", bh: "r", m: { mr: mg, mt: 12, ml: 10 } }); pri.text = pri.text0; setAll(pri, Object.assign({}, RED, { size: 19, radius: 32, dp: "없음" }));
+    } else if (id === "twoPills") {
+      putIn(sec, pan, { w: 120, h: 64, bh: "l", m: { ml: mg, mt: 12 } }); sec.text = "다음에"; setAll(sec, Object.assign({}, LIGHT, { size: 16, weight: "600", radius: 32 }));
+      putIn(pri, pan, { h: 64, szw: "fill", bh: "r", m: { mr: mg, mt: 12, ml: 10 } }); pri.text = pri.text0; setAll(pri, Object.assign({}, RED, { size: 19, radius: 32, dp: "없음" }));
+    } else if (id === "bar") {
+      sec.hidden = true;
+      putIn(pri, pan, { h: 64, szw: "fill", bh: "c", m: { ml: mg, mr: mg, mt: 12 } }); pri.text = pri.text0; setAll(pri, Object.assign({}, RED, { size: 19, radius: 32, dp: "없음" }));
+    } else if (id === "circles") {
+      putIn(sec, pan, { w: 64, h: 64, bh: "c", ox: -48, m: { mt: 14 } }); sec.text = "✕"; setAll(sec, Object.assign({}, LIGHT, { fill: "#FFFFFF", bw: 1, bc: "#E5E5EA", size: 22, radius: 32, ...SHADOW(10, 2, 8) }));
+      putIn(pri, pan, { w: 76, h: 76, bh: "c", ox: 42, m: { mt: 8 } }); pri.text = "♥"; setAll(pri, Object.assign({}, RED, { size: 30, radius: 38, ...SHADOW(14, 4, 18) }));
+    } else if (id === "fab") {
+      sec.hidden = true;
+      putIn(pri, pan, { w: 64, h: 64, bh: "r", bv: "b", m: { mr: mg, mb: 34 } }); pri.text = "♥"; setAll(pri, Object.assign({}, RED, { size: 26, radius: 32, ...SHADOW(18, 6, 22) }));
+    }
+  }
+  function applyHearts(id) {
+    const rs = D.els.filter((e) => e.kind === "react" && linkOf(e));
+    for (const r of rs) { const t = linkOf(r); if (t.kind === "photo") r.hidden = id === "none"; else if (t.kind === "prompt") r.hidden = id !== "both"; }
+    if (id === "both") for (const pr of D.els.filter((e) => e.kind === "prompt" && !e.hidden)) {
+      if (rs.some((r) => linkOf(r) === pr)) continue;
+      putIn(mkEl("react", { name: "반응 하트(질문)", w: 44, h: 44 }), pr, { bh: "r", bv: "b", m: { mr: 14, mb: 14 } });
+    }
+    heartPad();
+  }
+  function applyAlign(v) {
+    for (const e of D.els) {
+      if (!inFlow(e)) continue;
+      if (["prompt", "info", "chips", "friend", "text"].includes(e.kind)) setProp(e, "talign", v);
+      if (e.kind === "photo" && P(e).cap !== "위 왼쪽") setProp(e, "cap", v === "가운데" ? "아래 가운데" : "아래 왼쪽");
+    }
+  }
+  function applyMargin(v) {
+    for (const e of D.els) { if (!inFlow(e)) continue; const m = M(e); if (m.ml === 0 && m.mr === 0 && e.kind === "photo") continue; e.m = Object.assign({}, e.m || {}, { ml: v, mr: v }); }   // 화면 가득 사진은 그대로
+  }
+  function applyAn(k, v) {   // 하나 고르기 → 디자인에 기억
+    D.an = Object.assign({}, D.an || {}, { [k]: v });
+    if (k === "surf") applySurf(v); else if (k === "qa") applyQA(v); else if (k === "act") applyAct(v); else if (k === "hearts") applyHearts(v);
+    else if (k === "align") applyAlign(v); else if (k === "margin") { applyMargin(+v); if (D.an.act) applyAct(D.an.act); }
+  }
+  function applyTheme(id) {
+    const t = THEMES.find((x) => x.id === id); if (!t) return; const s = t.set;
+    usePreset("photo", s.photo, true); usePreset("info", s.info); usePreset("chips", s.chips); usePreset("friend", s.friend);
+    D.an = Object.assign({}, D.an || {}, { theme: id });
+    for (const k of ["surf", "qa", "margin", "act", "hearts", "align"]) applyAn(k, s[k]);
+    D.an.theme = id;
+  }
+  function checks() {   // 분석 규칙대로 점검: [{lv 1 고칠 것 · 2 살펴볼 것, e, t, why, fix}]
+    const out = [], vis = D.els.filter((e) => !e.hidden), r1 = (n) => Math.round(n * 10) / 10, mm = (n) => r1((n * 9) / 48);   // Google: 48dp ≈ 9mm
+    const seen = new Set(), once = (k) => !seen.has(k) && !!seen.add(k), mates = (e) => (e.style ? vis.filter((x) => x.style === e.style).length : 1), tail = (e) => (mates(e) > 1 ? ` (같은 모양 ${mates(e)}칸)` : "");
+    for (const e of vis.filter((x) => x.kind === "btn" || x.kind === "react")) {
+      const w = e.w, h = H_(e), lo = Math.min(w, h), top = e.fixed ? e.y : null, edge = top != null && (top + h > H - 150 || top < 110);
+      if (lo < 44) out.push({ lv: 1, e, t: `누르는 칸이 ${Math.round(w)}×${Math.round(h)}이라 작아요(약 ${mm(lo)}mm).`, why: "Apple: 버튼은 44×44 이상 · Google: 48×48(약 9mm) 이상", fix: () => { const cx = e.x + e.w / 2; if (e.w < 44) { e.w = 44; e.x = Math.round(cx - 22); } if (!KINDS[e.kind].auto && e.h < 44) e.h = 44; touch(e); } });
+      else if (edge && e.kind === "btn" && P(e).op > 0 && lo < 56) out.push({ lv: 2, e, t: `화면 아래쪽 가장자리 버튼이 높이 ${Math.round(h)}(약 ${mm(lo)}mm)예요.`, why: "가장자리·모서리는 덜 정확해서 약 12mm(≈64)가 좋아요(Hoober 2017). 레퍼런스 아래 동그라미 버튼은 화면 폭의 17~22.5%(66~88) (측정)", fix: () => { const r = P(e).radius >= Math.min(e.w, e.h) / 2 - 1; if (Math.abs(e.w - e.h) < 2) e.w = 64; e.h = 64; if (r) setProp(e, "radius", 32); touch(e); } });
+    }
+    const TXTC = { prompt: [["qColor", "qSize", "질문"], ["color", "size", "답"]], info: [["color", "size", ""]], chips: [["color", "size", "칩"], ["title", "size", "제목"]], friend: [["title", "size", "첫 줄"], ["color", "size", ""]], btn: [["color", "size", ""]], badge: [["color", "size", ""]], topbar: [["color", "size", "제목"]], text: [["color", "size", ""]], divider: [["color", "size", ""]], q: [["color", "size", ""]], a: [["color", "size", ""]] };
+    for (const e of vis) {
+      const spec = TXTC[e.kind]; if (!spec) continue; const p = P(e);
+      if (e.kind === "btn" && (p.op ?? 100) < 50 && !String(e.text).trim()) continue;
+      for (const [ck, sk, nm] of spec) {
+        const fg = p[ck]; if (!fg) continue;
+        const bg = e.kind === "chips" && ck === "color" ? (p.op ?? 100) >= 50 ? p.fill : behind(e) : behind(e), size = +p[sk] || 14, bold = +(e.kind === "prompt" && ck === "qColor" ? p.qWeight : p.weight) >= 700;
+        const large = size >= 24 || (bold && size >= 18.66), need = large ? 3 : 4.5, cr = ratioOf(fg, bg);
+        if (cr < need && once(`c|${e.style || e.id}|${ck}`)) out.push({ lv: 1, e, t: `${nm ? nm + " " : ""}글자 대비가 ${r1(cr)}:1이에요(${need}:1 이상).${tail(e)}`, why: `WCAG 2.2: 보통 글자 4.5:1, 큰 글자(24 이상 · 굵게 18.7 이상) 3:1. 글자 ${fg} · 바탕 ${bg}`, fix: () => { if (e.kind === "btn" && +p.weight >= 700 && size < 18.66 && cr >= 3) setProp(e, sk, 19); else setProp(e, ck, fixInk(fg, bg, need + 0.1)); } });   // 버튼 글은 큰 글자(굵게 18.7 이상)로, 나머지는 색을 조금 진하게
+        if (size < 11 && once(`s|${e.style || e.id}|${sk}|${nm}`)) out.push({ lv: 1, e, t: `${nm ? nm + " " : ""}글자 크기 ${size}가 작아요.${tail(e)}`, why: "Apple: 글자는 11 이상", fix: () => setProp(e, sk, 11) });
+      }
+    }
+    const { pri, sec } = actEls();
+    if (pri && sec && !pri.hidden && !sec.hidden && sec.x + sec.w / 2 > pri.x + pri.w / 2 + 2) out.push({ lv: 1, e: pri, t: "주 버튼이 넘기기 버튼 왼쪽에 있어요.", why: "넘기기와 좋아요가 같이 있는 앱 13곳 모두 넘기기가 왼쪽, 좋아요가 그 오른쪽(측정). 한 손 사용의 67%가 오른손 엄지(Hoober 2013)", fix: () => applyAn("act", (D.an && D.an.act) || "circlePill") });
+    const bgc = pageBg();
+    for (const e of vis.filter((x) => ["prompt", "info", "friend"].includes(x.kind) && inFlow(x))) {
+      const p = P(e); if ((p.op ?? 100) < 50 || e.kind === "info" && !(p.look === "칸" || p.look === "목록")) continue;
+      if (nearHex(p.fill, bgc) && !+p.bw && (!p.dp || p.dp === "없음") && once(`b|${e.style || e.id}`)) out.push({ lv: 2, e, t: "칸 색이 바탕과 거의 같아 경계가 안 보여요." + tail(e), why: "흰 바탕 위 흰 카드는 그림자(윌유·코코)나 테두리(커피팅·Boo)로, 또는 바탕을 연회색으로(Hinge). 카드는 바탕과 다른 색·테두리·옅은 그림자로 묶어요(NN/g 카드)", fix: () => setAll(e, SHADOW(20, 4, 8)) });
+    }
+    const flowTxt = vis.filter((x) => inFlow(x) && ["prompt", "friend", "text"].includes(x.kind)), al = {};
+    for (const e of flowTxt) { const a = P(e).talign || "왼쪽"; al[a] = (al[a] || 0) + 1; }
+    if (Object.keys(al).length > 1) out.push({ lv: 2, e: null, t: `글 맞추기가 섞였어요(${Object.entries(al).map(([k, v]) => `${k} ${v}개`).join(" · ")}).`, why: "레퍼런스 35곳 중 32곳이 왼쪽 맞춤. 왼쪽부터 읽는 글은 왼쪽과 위를 더 많이 봐요(NN/g F자 읽기)", fix: () => applyAn("align", "왼쪽") });
+    for (const e of vis.filter((x) => x.kind === "prompt")) {
+      const p = P(e), ra = (+p.size || 1) / (+p.qSize || 1);
+      if (ra < 1.3 && +p.qWeight <= +p.weight) { out.push({ lv: 2, e, t: `질문(${p.qSize})과 답(${p.size})이 비슷해 보여요.`, why: "답을 1.7~2배 크게(Hinge·League·Match·Bumble, 측정) 하거나 질문을 제목처럼 굵게(윌유·내친소)", fix: () => applyAn("qa", "bigSerif") }); break; }
+    }
+    const sides = vis.filter((x) => inFlow(x) && !(x.kind === "photo" && M(x).ml === 0 && M(x).mr === 0)).map((x) => M(x).ml);
+    const cnt = {}; for (const v of sides) cnt[v] = (cnt[v] || 0) + 1; const kinds = Object.keys(cnt);
+    if (kinds.length > 1) { const top = +Object.entries(cnt).sort((a, b) => b[1] - a[1])[0][0]; out.push({ lv: 2, e: null, t: `왼쪽 여백이 칸마다 달라요(${kinds.join(", ")}).`, why: "한 화면은 같은 여백으로 줄을 맞춰요(Apple: 정렬로 관계를 보여 줘요). 레퍼런스 좌우 여백은 화면 폭의 4.9~6.4%(약 19~25) (측정)", fix: () => applyAn("margin", top) }); }
+    else if (kinds.length === 1 && +kinds[0] > 0 && +kinds[0] < 16) out.push({ lv: 2, e: null, t: `좌우 여백 ${kinds[0]}이 좁아요.`, why: "레퍼런스 좌우 여백은 화면 폭의 4.9~6.4%(약 19~25) (측정: POF 4.9 · Hinge 5.2 · 코코 6.2 · happn 6.4%)", fix: () => applyAn("margin", 20) });
+    return out;
+  }
+  let anRes = null;   // 마지막 점검 결과(판을 다시 그려도 남게)
+  function screenPanel() {
+    if (anRes) anRes = checks();   // 점검 결과는 늘 지금 디자인으로(되돌리기 뒤에도)
+    const an = D.an || {}, opt = (arr, cur) => arr.map((x) => `<option value="${esc(x.id)}" ${String(cur) === String(x.id) ? "selected" : ""}>${esc(x.name)} · ${esc(x.n)}</option>`).join("");
+    const why = (arr, cur) => { const x = arr.find((y) => String(y.id) === String(cur)); return x ? `<p class="an-why">${esc(x.why)}</p>` : `<p class="an-why">고르면 화면 전체가 바뀌어요. 칸 하나만 바꾸려면 그 칸을 눌러 ‘표현 방식’에서 골라요.</p>`; };
+    const ALG = [{ id: "왼쪽", name: "왼쪽 맞춤", n: "35곳 중 32곳", why: "왼쪽부터 읽는 글은 위·왼쪽을 더 많이 봐요(NN/g F자 읽기). 줄 시작이 같아 훑기 쉬워요." }, { id: "가운데", name: "가운데 맞춤", n: "Omiai · 블라인드데이트 · 더블유클럽", why: "짧은 한두 줄(이름·한 줄 소개)에만. 긴 글은 줄 시작이 들쭉날쭉해져요." }];
+    const MGS = [{ id: 16, name: "16", n: "좁게", why: "레퍼런스보다 조금 좁아요." }, { id: 20, name: "20", n: "Hinge·POF 쯤(화면 폭 5%)", why: "측정: POF 4.9% · Hinge 5.2% · 코코 6.2% · happn 6.4%(화면 폭 390이면 19~25)." }, { id: 24, name: "24", n: "코코·happn 쯤(6%)", why: "측정: 코코 6.2% · happn 6.4%." }];
+    const sl = (id, nm, arr, cur) => `<div class="row"><span>${nm}</span><select id="${id}"><option value="">${cur == null || cur === "" ? "— 고르기 —" : "— 다시 고르기 —"}</option>${opt(arr, cur)}</select></div>${why(arr, cur)}`;
+    let h = `<p class="note">아무 칸도 고르지 않았을 때 보이는 판이에요. <b>레퍼런스 분석</b>(앱 35곳 · 프로필 화면 58장)에서 나온 방식을 <b>화면 전체</b>에 한꺼번에 적용해요. 칸 하나만 바꾸려면 그 칸을 눌러요.</p>`;
+    h += `<div class="linkbox"><div class="tt">한꺼번에(화면 묶음)</div>${sl("an-theme", "묶음", THEMES, an.theme)}</div>`;
+    h += `<div class="linkbox"><div class="tt">하나씩</div>${sl("an-surf", "바탕과 글 칸", SURF, an.surf)}${sl("an-qa", "질문과 답", QAS, an.qa)}${sl("an-act", "아래 버튼", ACTS, an.act)}${actEls().pan ? "" : `<p class="an-why" style="margin-top:-4px">지금 디자인엔 화면 아래에 붙은 버튼 판이 없어서, 고르면 판과 버튼을 새로 만들어요(대화 사이 버튼은 그대로).</p>`}${sl("an-hearts", "항목마다 하트", HEARTS, an.hearts)}${sl("an-align", "글 맞추기", ALG, an.align)}${sl("an-margin", "좌우 여백", MGS, an.margin)}</div>`;
+    h += `<div class="linkbox"><div class="tt">겹쳐 보기(편집할 때만)</div><label class="chk"><input type="checkbox" id="an-order" ${anOv.order ? "checked" : ""}> 읽는 순서(위 → 아래, 왼쪽 → 오른쪽 번호)</label><label class="chk"><input type="checkbox" id="an-touch" ${anOv.touch ? "checked" : ""}> 누르기 쉬운 곳(가운데가 가장 정확) + 버튼 크기(mm)</label><p class="an-why">누르기: 가운데는 약 7mm, 가장자리·모서리는 약 12mm가 필요해요(Hoober 2017, 그림을 단순하게). mm는 Google 기준 48 ≈ 9mm로 바꿔 셈.</p></div>`;
+    h += `<div class="linkbox"><div class="tt">점검</div><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn pri" id="an-check">규칙대로 점검하기</button>${anRes && anRes.some((x) => x.fix) ? '<button class="btn" id="an-fixall">모두 고치기</button>' : ""}</div>${anRes ? (anRes.length ? `<ul class="an-list">${anRes.map((x, i) => `<li class="${x.lv === 1 ? "hi" : ""}"><b>${x.lv === 1 ? "고칠 것" : "살펴볼 것"} · ${esc(x.e ? x.e.name : "화면 전체")}</b><span>${esc(x.t)}</span><small>${esc(x.why)}</small>${x.fix ? `<button class="btn" data-anfix="${i}">고치기</button>` : ""}</li>`).join("")}</ul>` : `<p class="note" style="margin:6px 0 0">규칙에 어긋난 곳이 없어요.</p>`) : `<p class="an-why" style="margin-top:6px">버튼 크기 · 글자 대비 · 글자 크기 · 주 버튼 자리 · 칸과 바탕 경계 · 글 맞추기 · 질문과 답 차이 · 좌우 여백을 봐요.</p>`}</div>`;
+    h += `<p class="src"><b>근거</b> · 레퍼런스 측정(앱 35곳) · NN/g(F자·층 케이크 읽기, 공통 영역, 근접, 카드) · Hoober(UXmatters 2013·2017) · Apple(44pt) · Google(48dp) · WCAG 2.2(4.5:1)</p>`;
+    return h;
+  }
+  function bindScreenPanel(body) {
+    const go = (fn, msg) => { fn(); anRes = null; commit(); render(); toast(msg); };
+    const on = (id, k, arr, nm) => { const el = $("#" + id, body); if (el) el.onchange = () => { const v = el.value; if (!v) return; const x = arr.find((y) => String(y.id) === v); go(() => (k === "theme" ? applyTheme(v) : applyAn(k, k === "margin" ? +v : v)), `${nm}: ‘${x ? x.name : v}’로 화면 전체를 바꿨어요.`); }; };
+    on("an-theme", "theme", THEMES, "화면 묶음"); on("an-surf", "surf", SURF, "바탕과 글 칸"); on("an-qa", "qa", QAS, "질문과 답"); on("an-act", "act", ACTS, "아래 버튼"); on("an-hearts", "hearts", HEARTS, "항목마다 하트");
+    on("an-align", "align", [{ id: "왼쪽", name: "왼쪽 맞춤" }, { id: "가운데", name: "가운데 맞춤" }], "글 맞추기"); on("an-margin", "margin", [16, 20, 24].map((v) => ({ id: v, name: String(v) })), "좌우 여백");
+    $("#an-order", body).onchange = (ev) => { anOv.order = ev.target.checked; drawSel(); };
+    $("#an-touch", body).onchange = (ev) => { anOv.touch = ev.target.checked; drawSel(); };
+    $("#an-check", body).onclick = () => { anRes = checks(); renderProps(); toast(anRes.length ? `${anRes.length}곳을 찾았어요.` : "규칙에 어긋난 곳이 없어요."); };
+    if ($("#an-fixall", body)) $("#an-fixall", body).onclick = () => { const n = anRes.filter((x) => x.fix).length; for (const x of anRes) if (x.fix) x.fix(); anRes = null; commit(); render(); anRes = checks(); renderProps(); toast(`${n}곳을 고쳤어요. 다시 점검했어요.`); };
+    $$("[data-anfix]", body).forEach((b) => (b.onclick = () => { const x = anRes[+b.dataset.anfix]; if (!x || !x.fix) return; x.fix(); anRes = null; commit(); render(); anRes = checks(); renderProps(); toast("고쳤어요. 다시 점검했어요."); }));
+  }
+  function anOverlay() {   // 겹쳐 보기: 누르기 쉬운 곳 · 버튼 크기(mm) · 읽는 순서 번호
+    const out = [], top = (e) => (e.fixed ? e.y : e.y - sy);
+    if (anOv.touch) {
+      out.push(`<div class="an-ov an-touch" style="top:0"><i class="m"></i><i class="c"></i><b style="left:50%;top:50%">가운데: 가장 정확 · 약 7mm</b><b style="left:50%;top:8%">가장자리·모서리: 약 12mm 필요</b></div>`);
+      for (const e of D.els.filter((x) => !x.hidden && (x.kind === "btn" || x.kind === "react"))) {
+        const t = top(e), h = H_(e); if (t + h < 0 || t > H) continue;
+        const lo = Math.min(e.w, h), mmv = Math.round((lo * 9) / 48 * 10) / 10, cx = e.x + e.w / 2, cy = t + h / 2;
+        const edge = cx < W * 0.12 || cx > W * 0.88 || cy < H * 0.14 || cy > H * 0.86, ok = mmv >= (edge ? 12 : 7);
+        out.push(`<span class="an-mm ${ok ? "ok" : "lo"}" style="left:${px(cx)};top:${px(cy)}">${mmv}mm</span>`);
+      }
+    }
+    if (anOv.order) {
+      const vs = D.els.filter((e) => !e.hidden && !["bg", "frame", "status"].includes(e.kind) && !(e.kind === "btn" && (P(e).op ?? 100) < 50 && linkOf(e)?.kind === "topbar")).map((e) => ({ e, t: top(e), h: H_(e) })).filter((o) => o.t + o.h > 0 && o.t < H);
+      vs.sort((a, b) => a.t - b.t || a.e.x - b.e.x);
+      const rows = []; for (const o of vs) { const r = rows[rows.length - 1]; if (r && Math.abs(o.t - r[0].t) <= 14) r.push(o); else rows.push([o]); }   // 위가 비슷하면 한 줄(왼쪽부터)
+      let n = 0; for (const r of rows) for (const o of r.sort((a, b) => a.e.x - b.e.x)) out.push(`<span class="an-n" style="left:${px(o.e.x + 6)};top:${px(Math.max(4, o.t + 6))}">${++n}</span>`);
+    }
+    return out.join("");
+  }
   function renderProps() {
     const body = $("#propBody");
     if (document.activeElement && body.contains(document.activeElement) && renderProps.busy) return;
-    if (!sel.length) { body.innerHTML = `<p class="note">화면이나 왼쪽 ‘단계’에서 요소를 눌러 고르세요. 여러 개는 Shift를 누른 채 눌러요.</p>`; return; }
+    $("#prT").textContent = sel.length ? "고른 요소" : "화면 전체(분석 규칙)";
+    if (!sel.length) { body.innerHTML = screenPanel(); bindScreenPanel(body); return; }
     if (sel.length > 1) {
       const es = sel.map(byId).filter(Boolean), kinds = new Set(es.map((x) => x.kind));
       const same = (k) => { const v = es.map((x) => shownM(x)[k]); return v.every((y) => y === v[0]) ? v[0] : ""; };
@@ -889,6 +1250,7 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
       h += `<div class="row" style="margin:6px 0 0"><span>글 여백(글자와 칸 끝 사이)</span></div><div class="mgrid"><span></span>${tIn("tpT", "위")}<span></span>${tIn("tpL", "왼쪽")}<div class="mc">글자</div>${tIn("tpR", "오른쪽")}<span></span>${tIn("tpB", "아래")}<span></span></div>`;
       h += `<p class="note" style="margin:0">${k.auto ? "높이는 늘 글자 + 글 여백이에요(글자가 커지면 칸도 커져요)." : "크기 정하기에서 ‘글에 맞춰’를 고르면 칸이 글자 + 글 여백 크기가 돼요(글자가 커지면 칸도 커져요)."}${fitW(e) ? (k.auto ? " 너비도 ‘글에 맞춰’를 고를 수 있어요." : "") : ""}</p></div>`;
     }
+    if (PRESETS[e.kind]) h += `<div class="linkbox"><div class="tt">표현 방식(레퍼런스)</div><div class="row" style="margin:0"><span>앱마다 다른 모양</span><select id="f-pre"><option value="">${p.pre ? "직접 바꾼 모양" : "지금 모양"}</option>${PRESETS[e.kind].map((x) => `<option value="${x.id}" ${p.pre === x.id ? "selected" : ""}>${esc(x.name)} · ${esc(x.src)}</option>`).join("")}</select></div><p class="note" style="margin:4px 0 0">고르면 그 앱처럼 색·모양·글자가 한꺼번에 바뀌어요(연동된 칸도 같이). 그다음 아래에서 하나씩 바꿀 수 있어요. 화면은 ‘프로필 화면 레퍼런스’ 페이지에서 볼 수 있어요.</p></div>`;
     h += `<h3>모양</h3>` + k.f.filter(([key]) => !(k.inner || []).includes(key) && !(TXT[e.kind] && TXT_KEYS.includes(key))).map(([key, label, type, a, b, step]) => (key === "radius" ? cornerField(e, p, label, a, b) : field(key, label, type, a, b, step, p[key]))).join("");
     if (e.kind === "info") h += infoBox(e, p);
     if (k.src) h += `<p class="src"><b>참고한 앱</b> · ${esc(k.src)}</p>`;
@@ -1309,6 +1671,12 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
     if ($("#f-gsize")) $("#f-gsize").onchange = (ev) => { gset("size", ev.target.checked); if (ev.target.checked) shareSize(e); commit(); render(); toast(ev.target.checked ? "묶인 칸을 이 칸과 같은 크기로 맞췄어요. 이제 하나를 바꾸면 모두 같은 크기로 바뀌어요." : "크기는 칸마다 따로 바뀌어요."); };
     if ($("#f-gm")) $("#f-gm").onchange = (ev) => { gset("m", ev.target.checked); if (ev.target.checked) copyMargins(e, gMates(e)); commit(); render(); toast(ev.target.checked ? "묶인 칸 여백을 이 칸과 같게 맞췄어요. 이제 같이 바뀌어요." : "여백은 칸마다 따로 바뀌어요."); };
     if ($("#f-ungroup")) $("#f-ungroup").onclick = () => { const g = e.group; e.group = null; const rest = D.els.filter((x) => x.group === g); if (rest.length < 2) rest.forEach((x) => (x.group = null)); commit(); render(); };
+    if ($("#f-pre")) $("#f-pre").onchange = (ev) => {
+      const pr = PRESETS[e.kind].find((x) => x.id === ev.target.value); if (!pr) return;
+      for (const [k2, v] of Object.entries(pr.props)) setProp(e, k2, v); setProp(e, "pre", pr.id);
+      if (pr.m != null) for (const x of [e, ...(e.style ? D.els.filter((y) => y !== e && y.style === e.style) : [])]) if (inFlow(x)) x.m = Object.assign({}, x.m || {}, { ml: pr.m, mr: pr.m });   // 화면 가득은 양옆 여백 0
+      commit(); render(); toast(`‘${pr.name}’(${pr.src}) 모양으로 바꿨어요.`);
+    };
     $$("[data-k]", body).forEach((inp) => {
       const key = inp.dataset.k;
       const apply = () => { let v = inp.type === "checkbox" ? inp.checked : inp.type === "number" || inp.type === "range" ? +inp.value : inp.value; setProp(e, key, v); $$(`[data-k="${key}"]`, body).forEach((o) => { if (o !== inp && o.type !== "checkbox") o.value = v; }); renderStageOnly(); commitSoon(); };
@@ -1489,7 +1857,7 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
   // ---------- 칸 안 글을 그 자리에서 고치기 ----------
   // 칸을 두 번 누르거나(고른 뒤 Enter) 그 칸 안 글을 바로 지우고 써요. 칸 크기·자리는 그대로(정보 줄은 칸 하나하나, 빈 칸도 칸)
   let editing = null;
-  const MULTI = (e, key) => (key === "all" && (e.kind === "q" || e.kind === "a" || e.kind === "text")) || (key === "rest" && e.kind === "friend");
+  const MULTI = (e, key) => (key === "all" && (e.kind === "q" || e.kind === "a" || e.kind === "text" || e.kind === "photo")) || (key === "rest" && (e.kind === "friend" || e.kind === "prompt"));
   function partSet(e, key, v) {
     v = String(v).replace(/\r/g, "").replace(/\u00a0/g, " ").replace(/\n+$/, "");
     if (!MULTI(e, key)) v = v.replace(/\n/g, " ");
@@ -1497,7 +1865,7 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
     if (key === "all") e.text = v;
     else if (key === "l0") { lines[0] = v.trim(); e.text = lines.join("\n"); }
     else if (key === "rest") e.text = [lines[0], ...(v.trim() ? (e.kind === "topbar" ? [v.trim()] : v.split("\n")) : [])].join("\n");
-    else if (/^c\d+$/.test(key)) { const items = lines.slice(1).join(",").split(",").map((x) => x.trim()).filter(Boolean); items[+key.slice(1)] = v.trim(); e.text = [lines[0], items.filter(Boolean).join(", ")].join("\n"); }
+    else if (/^c\d+$/.test(key)) { const items = lines.slice(1).join(",").split(",").map((x) => x.trim()).filter(Boolean); items[+key.slice(1)] = P(e).hash ? v.trim().replace(/^#+/, "") : v.trim(); e.text = [lines[0], items.filter(Boolean).join(", ")].join("\n"); }
     else { const m = /^r(\d+)c(\d+)$/.exec(key); if (!m) return; const g = infoRows(e); if (g[+m[1]] && +m[2] < g[+m[1]].length) g[+m[1]][+m[2]] = v.replace(/\|/g, " ").trim(); e.text = g.map((r) => r.join("|")).join("\n"); }
   }
   function startEdit(e, key) {
@@ -1751,6 +2119,7 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
   $("#previewBtn").onclick = () => { preview = !preview; $("#previewBtn").setAttribute("aria-pressed", String(preview)); render(); };
   $("#playBtn").onclick = () => { const to = maxScroll(); const from = sy; const t0 = performance.now(); const dur = 4000; const back = from > to / 2; const step = (t) => { const k = Math.min(1, (t - t0) / dur); const e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; sy = back ? from * (1 - e) : from + (to - from) * e; render(); if (k < 1) requestAnimationFrame(step); }; requestAnimationFrame(step); };
   function modeText() { $("#modeinfo").textContent = preview ? "미리보기예요. 화면을 끌거나 휠을 굴려 내려 보세요. 고정된 요소와 단계 순서대로 가려지는 모습을 볼 수 있어요." : "편집 중이에요. 칸을 눌러 고르고 끌어서 옮겨요(Shift: 여러 개 고르기 · 크기를 바꿀 때는 가운데 기준, Alt: 묶음에서 이것만, ⌘: 맞춤 선 잠깐 끄기). 대화 칸은 다른 칸 옆 빈자리에 놓으면 나란히, 다른 칸 위에 놓으면 순서가 바뀌어요. 고른 칸의 여백은 주황으로 보여요."; }
+  $("#anBtn").onclick = () => { sel = []; anRes = null; render(); const pb = $("#propBody"); if (pb && pb.scrollIntoView) pb.scrollIntoView({ block: "nearest" }); toast("오른쪽에서 레퍼런스 분석 규칙을 화면 전체에 적용하고, ‘점검하기’로 확인해요."); };
   $("#bgBtn").onclick = () => {
     const bgs = D.els.filter((e) => e.kind === "bg");
     if (!bgs.length) { toast("배경이 없어요. ‘요소 더하기’에서 배경을 더해 주세요."); return; }
@@ -1908,11 +2277,17 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
   $("#codeIn").onclick = () => { try { const x = JSON.parse($("#code").value); if (!x.els || !x.styles) throw 0; hist.push(snap()); D = upgrade(x); sel = []; sy = 0; render(); commit(false); toast("코드에서 불러왔어요."); } catch (_) { toast("코드가 맞지 않아요. 통째로 붙여 넣었는지 확인해 주세요."); } };
 
   window.addEventListener("resize", () => { if (appMode) renderApp(true); else { fit(); renderStageOnly(); } });
-  if (wantApp()) setApp(true);   // 링크 끝에 #phone 이면 바로 휴대폰 화면으로   // 휴대폰에서 자판이 올라와도 쓰던 칸이 끊기지 않게
+  const layFirst = fresh && !FIXED;   // 이 기기에 저장된 디자인이 없으면(처음 디자인) 자리를 아직 안 잡았어요: 편집기로 한 번 배치한 뒤 앱처럼 보기로
+  if (wantApp() && !layFirst) setApp(true);   // 링크 끝에 #phone 이면 바로 휴대폰 화면으로   // 휴대폰에서 자판이 올라와도 쓰던 칸이 끊기지 않게
   fit(); render();
+  if (wantApp() && layFirst) setApp(true);
   // 글꼴이 늦게 오면 말풍선 높이가 바뀌어서 화면만 다시 그려요. 오른쪽 칸까지 다시 만들면 글을 쓰던 칸이 새로 바뀌어 입력이 끊겨요
   // (한글은 글자 묶음마다 글꼴 파일을 따로 받아서, 처음 쓰는 글자를 칠 때 이 일이 생겨요)
-  if (document.fonts) { const fontsIn = () => { if (appMode) { renderApp(true); return; } if (!editing) { renderStageOnly(); if (isComputer()) liveSoon(); } }; document.fonts.ready.then(fontsIn); document.fonts.addEventListener?.("loadingdone", fontsIn); }   // 글을 고치는 중이면 다 고친 뒤 다시 그려요
+  function layOwn() {   // 앱처럼 보기에서 이 기기의 디자인(맥 화면을 못 받았을 때)을 편집기로 다시 배치: 같은 순간에 잠깐 편집기를 켜서 재고 끄니 화면엔 안 보여요
+    const am = appMode; appMode = false; document.body.classList.remove("appmode"); $("#appview").hidden = true;
+    try { fit(); render(); } finally { appMode = am; document.body.classList.toggle("appmode", am); $("#appview").hidden = !am; }
+  }
+  if (document.fonts) { const fontsIn = () => { if (appMode) { if (!FIXED && liveShown === null) layOwn(); renderApp(true); return; } if (!editing) { renderStageOnly(); if (isComputer()) liveSoon(); } }; document.fonts.ready.then(fontsIn); document.fonts.addEventListener?.("loadingdone", fontsIn); }   // 글을 고치는 중이면 다 고친 뒤 다시 그려요
   if (fresh && !FIXED) commit(false);
   syncUndo();
 })();
