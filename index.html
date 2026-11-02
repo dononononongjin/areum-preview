@@ -755,6 +755,7 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
     return sig() !== before;
   }
   function render() {
+    if (appMode) { renderApp(true); return; }   // 앱처럼 보기: 맥에서 놓은 자리 그대로(다시 배치하지 않아요)
     if (editing) saveEdit();   // 고치던 글은 남기고 다시 그려요
     // 자동 배치: 놓기 → 그리며 높이 재기 → 높이가 바뀌었으면 다시 놓기(최대 몇 번)
     keepLinkZ();
@@ -1831,8 +1832,9 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
     if (e.kind in MH && +p.minH > 0) { dc += " mh" + (MH[e.kind] ? " mh" + MH[e.kind] : ""); ds += `--mh:${+p.minH}px;`; }
     return `<div class="el${dc}" style="left:${px(e.x)};top:${px(top)};width:${sizeW(e) === "fit" ? "max-content" : px(e.w)};${k.auto || sizeH(e) === "fit" ? "" : `height:${px(H_(e))};`}z-index:${i + 1};${ds}${extra}">${inner(e, p)}</div>`;
   }
+  const standalone = () => window.navigator.standalone === true || (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches);
   function renderApp(keep) {
-    const vw = window.innerWidth, vh = window.innerHeight, z = isComputer() ? Math.min(1, vh / H) : vw / W, VH = vh / z;   // 휴대폰: 너비를 꽉 채워요
+    const vw = window.innerWidth, vh = standalone() ? Math.max(window.innerHeight, (window.screen && window.screen.height) || 0) : window.innerHeight, z = isComputer() ? Math.min(1, vh / H) : vw / W, VH = vh / z;   // 휴대폰: 너비를 꽉 채워요
     const sc = $("#avScroll"), st = keep ? sc.scrollTop : 0;
     const rootOf = (e) => { let t = e; for (let n = 0; n < 20; n++) { const q = linkOf(t); if (!q) break; t = q; } return t; };
     const side = (e) => { const r = rootOf(e); if (r.b && r.b.v) return r.b.v === "b" ? "b" : r.b.v === "c" ? "c" : "t"; return r.y + H_(r) / 2 > H / 2 ? "b" : "t"; };
@@ -1841,6 +1843,7 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
       if (e.hidden) return;
       if (!e.fixed) { html.push(elHTML(e, i, e.y, "transform:translateY(calc(var(--sy, 0) * -1px));")); return; }   // 대화 흐름 칸: 내려 본 만큼 올라가요
       let top = e.y, extra = "";
+      if (e.kind === "status" && standalone()) { const p = P(e); html.push(`<div class="el" style="left:${px(e.x)};top:${px(e.y)};width:${px(e.w)};height:${px(H_(e))};z-index:${i + 1};"><div style="width:100%;height:100%;${radCSS(p)}background:${fillCSS(p, "fill", p.op)}"></div></div>`); return; }   // 진짜 시계가 보이게 글은 빼요
       if (e.kind === "bg") { top = 0; extra = `height:${px(VH)};`; }
       else { const sd = side(e); if (sd === "b") top = VH - (H - e.y); else if (sd === "c") top = e.y + (VH - H) / 2; }   // 아래에 붙인 고정 칸은 화면 아래 끝에
       html.push(elHTML(e, i, top, extra));
@@ -1850,7 +1853,9 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
     const range = Math.max(0, (D.contentH || H) - VH);
     sc.innerHTML = `<div style="height:${px(vh + range * z)}"></div>`;
     sc.onscroll = () => { const b = $("#avBox"); if (b) b.style.setProperty("--sy", String(Math.min(range, sc.scrollTop / z))); };
-    const bg = D.els.find((e) => e.kind === "bg"); $("#appview").style.background = isComputer() ? "#0E0E10" : bg ? (P(bg).fill || "#fff") : "#fff";
+    const bg = D.els.find((e) => e.kind === "bg"), base = isComputer() ? "#0E0E10" : bg ? (P(bg).fill || "#fff") : "#fff";
+    const av = $("#appview"); av.style.background = base; av.style.bottom = "auto"; av.style.height = px(vh);   // 화면 끝까지(홈 화면 앱에서도)
+    document.documentElement.style.background = base; document.body.style.background = base;   // 혹시 남는 곳도 디자인 바탕색으로
     sc.scrollTop = st; sc.onscroll();
   }
   function showLive(d, first) {
@@ -1870,7 +1875,7 @@ body.appmode > :not(.appview):not(.toast):not(script) { display: none !important
       if (FIXED) { renderApp(false); $("#avBack").hidden = true; }
       else if (d) showLive(d, true);
       else { renderApp(false); avMsg(db === null && appMode && setApp.ready ? "맥 화면을 불러올 수 없어요(claude.ai에 로그인해야 해요). 이 기기의 디자인을 보여 줘요." : "맥 화면을 불러오는 중…", db ? 0 : 6000); }
-    } else { try { D = store.get(WKEY) ? upgrade(store.get(WKEY)) : D; } catch (_) {} liveShown = null; avMsg(""); fit(); render(); }
+    } else { document.documentElement.style.background = ""; document.body.style.background = ""; try { D = store.get(WKEY) ? upgrade(store.get(WKEY)) : D; } catch (_) {} liveShown = null; avMsg(""); fit(); render(); }
   }
   const wantApp = () => !!FIXED || location.hash === "#app" || location.hash === "#phone" || (!isComputer() && location.hash !== "#edit");
   $("#phoneBtn").onclick = () => { try { location.hash = "app"; } catch (_) {} setApp(true); };
